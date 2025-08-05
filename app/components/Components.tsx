@@ -1,21 +1,6 @@
 "use client";
 
-import { type ReactNode, useCallback, useMemo, useState } from "react";
-import { useAccount } from "wagmi";
-import {
-  Transaction,
-  TransactionButton,
-  TransactionToast,
-  TransactionToastAction,
-  TransactionToastIcon,
-  TransactionToastLabel,
-  TransactionError,
-  TransactionResponse,
-  TransactionStatusAction,
-  TransactionStatusLabel,
-  TransactionStatus,
-} from "@coinbase/onchainkit/transaction";
-import { useNotification } from "@coinbase/onchainkit/minikit";
+import { type ReactNode, useState } from "react";
 
 type ButtonProps = {
   children: ReactNode;
@@ -111,11 +96,7 @@ function Card({
   );
 }
 
-type HomeProps = {
-  // No props needed anymore
-};
-
-export function Home({}: HomeProps) {
+export function Home() {
   return (
     <div className="space-y-6 animate-fade-in">
       <Card title="Smart Buy">
