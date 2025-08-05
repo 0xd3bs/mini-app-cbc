@@ -111,70 +111,31 @@ function Card({
   );
 }
 
-type FeaturesProps = {
-  setActiveTab: (tab: string) => void;
-};
-
-export function Features({ setActiveTab }: FeaturesProps) {
-  return (
-    <div className="space-y-6 animate-fade-in">
-      <Card title="Key Features">
-        <ul className="space-y-3 mb-4">
-          <li className="flex items-start">
-            <Icon name="check" className="text-[var(--app-accent)] mt-1 mr-2" />
-            <span className="text-[var(--app-foreground-muted)]">
-              Minimalistic and beautiful UI design
-            </span>
-          </li>
-          <li className="flex items-start">
-            <Icon name="check" className="text-[var(--app-accent)] mt-1 mr-2" />
-            <span className="text-[var(--app-foreground-muted)]">
-              Responsive layout for all devices
-            </span>
-          </li>
-          <li className="flex items-start">
-            <Icon name="check" className="text-[var(--app-accent)] mt-1 mr-2" />
-            <span className="text-[var(--app-foreground-muted)]">
-              Dark mode support
-            </span>
-          </li>
-          <li className="flex items-start">
-            <Icon name="check" className="text-[var(--app-accent)] mt-1 mr-2" />
-            <span className="text-[var(--app-foreground-muted)]">
-              OnchainKit integration
-            </span>
-          </li>
-        </ul>
-        <Button variant="outline" onClick={() => setActiveTab("home")}>
-          Back to Home
-        </Button>
-      </Card>
-    </div>
-  );
-}
-
 type HomeProps = {
-  setActiveTab: (tab: string) => void;
+  // No props needed anymore
 };
 
-export function Home({ setActiveTab }: HomeProps) {
+export function Home({}: HomeProps) {
   return (
     <div className="space-y-6 animate-fade-in">
-      <Card title="My First Mini App">
+      <Card title="Smart Buy">
         <p className="text-[var(--app-foreground-muted)] mb-4">
           This is a minimalistic Mini App built with OnchainKit components.
         </p>
         <Button
-          onClick={() => setActiveTab("features")}
-          icon={<Icon name="arrow-right" size="sm" />}
+          onClick={() => {
+            // TODO: Implement Buy functionality
+            console.log("Buy button clicked!");
+          }}
+          className="w-full"
         >
-          Explore Features
+          Buy
         </Button>
       </Card>
 
-      <TodoList />
-
-      <TransactionCard />
+      <Card title="Recent Activity">
+        <TransactionHistory />
+      </Card>
     </div>
   );
 }
@@ -279,184 +240,119 @@ export function Icon({ name, size = "md", className = "" }: IconProps) {
   );
 }
 
-type Todo = {
-  id: number;
-  text: string;
-  completed: boolean;
-}
+function TransactionHistory() {
+  const initialTransactions = [
+    {
+      id: '0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f',
+      tokenFrom: 'USDC',
+      amountFrom: 100,
+      tokenTo: 'ETH',
+      amountTo: 0.3,
+      timestamp: '5 minutes ago',
+    },
+    {
+      id: '0x2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g',
+      tokenFrom: 'USDC',
+      amountFrom: 100,
+      tokenTo: 'BTC',
+      amountTo: 0.0009,
+      timestamp: '1 hour ago',
+    },
+    {
+      id: '0x3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g4h',
+      tokenFrom: 'USDC',
+      amountFrom: 100,
+      tokenTo: 'ETH',
+      amountTo: 0.3,
+      timestamp: '3 hours ago',
+    },
+  ];
 
-function TodoList() {
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: 1, text: "Learn about MiniKit", completed: false },
-    { id: 2, text: "Build a Mini App", completed: true },
-    { id: 3, text: "Deploy to Base and go viral", completed: false },
-  ]);
-  const [newTodo, setNewTodo] = useState("");
+  const [transactions, setTransactions] = useState(initialTransactions);
 
-  const addTodo = () => {
-    if (newTodo.trim() === "") return;
-
-    const newId =
-      todos.length > 0 ? Math.max(...todos.map((t) => t.id)) + 1 : 1;
-    setTodos([...todos, { id: newId, text: newTodo, completed: false }]);
-    setNewTodo("");
+  const handleDeleteTransaction = (id: string) => {
+    setTransactions(transactions.filter((tx) => tx.id !== id));
   };
 
-  const toggleTodo = (id: number) => {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-      ),
-    );
+  const handleClearAll = () => {
+    setTransactions([]);
   };
 
-  const deleteTodo = (id: number) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      addTodo();
-    }
-  };
+  const SwapIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5 text-[var(--app-foreground-muted)]"
+    >
+      <path d="M16 3h5v5" />
+      <path d="M4 20 21 3" />
+      <path d="M21 16v5h-5" />
+      <path d="M15 15h6v6" />
+      <path d="M3 4l7 7" />
+    </svg>
+  );
 
   return (
-    <Card title="Get started">
-      <div className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <input
-            type="text"
-            value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Add a new task..."
-            className="flex-1 px-3 py-2 bg-[var(--app-card-bg)] border border-[var(--app-card-border)] rounded-lg text-[var(--app-foreground)] placeholder-[var(--app-foreground-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--app-accent)]"
-          />
-          <Button
-            variant="primary"
-            size="md"
-            onClick={addTodo}
-            icon={<Icon name="plus" size="sm" />}
-          >
-            Add
-          </Button>
+    <div className="space-y-4">
+      {transactions.length > 0 ? (
+        <>
+          <ul className="space-y-3">
+            {transactions.map((tx) => (
+              <li key={tx.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--app-gray-light)] transition-colors group">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-[var(--app-gray)] rounded-full">
+                    <SwapIcon />
+                  </div>
+                  <div>
+                    <p className="font-medium text-[var(--app-foreground)]">
+                      Swap {tx.amountFrom} {tx.tokenFrom} for {tx.amountTo} {tx.tokenTo}
+                    </p>
+                    <p className="text-sm text-[var(--app-foreground-muted)]">
+                      {tx.timestamp}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                   <a
+                    href={`https://basescan.org/tx/${tx.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--app-accent)] hover:underline"
+                  >
+                    <Icon name="arrow-right" size="sm" />
+                  </a>
+                  <button
+                    onClick={() => handleDeleteTransaction(tx.id)}
+                    className="opacity-0 group-hover:opacity-100 text-[var(--app-foreground-muted)] hover:text-[var(--app-foreground)] transition-opacity"
+                    aria-label="Delete transaction"
+                  >
+                    &times;
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-end pt-2">
+            <Button variant="ghost" size="sm" onClick={handleClearAll}>
+              Clear All
+            </Button>
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-8">
+          <p className="text-[var(--app-foreground-muted)]">No recent activity.</p>
         </div>
-
-        <ul className="space-y-2">
-          {todos.map((todo) => (
-            <li key={todo.id} className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  id={`todo-${todo.id}`}
-                  onClick={() => toggleTodo(todo.id)}
-                  className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                    todo.completed
-                      ? "bg-[var(--app-accent)] border-[var(--app-accent)]"
-                      : "border-[var(--app-foreground-muted)] bg-transparent"
-                  }`}
-                >
-                  {todo.completed && (
-                    <Icon
-                      name="check"
-                      size="sm"
-                      className="text-[var(--app-background)]"
-                    />
-                  )}
-                </button>
-                <label
-                  htmlFor={`todo-${todo.id}`}
-                  className={`text-[var(--app-foreground-muted)] cursor-pointer ${todo.completed ? "line-through opacity-70" : ""}`}
-                >
-                  {todo.text}
-                </label>
-              </div>
-              <button
-                type="button"
-                onClick={() => deleteTodo(todo.id)}
-                className="text-[var(--app-foreground-muted)] hover:text-[var(--app-foreground)]"
-              >
-                ×
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </Card>
+      )}
+    </div>
   );
 }
 
 
-function TransactionCard() {
-  const { address } = useAccount();
 
-  // Example transaction call - sending 0 ETH to self
-  const calls = useMemo(() => address
-    ? [
-        {
-          to: address,
-          data: "0x" as `0x${string}`,
-          value: BigInt(0),
-        },
-      ]
-    : [], [address]);
-
-  const sendNotification = useNotification();
-
-  const handleSuccess = useCallback(async (response: TransactionResponse) => {
-    const transactionHash = response.transactionReceipts[0].transactionHash;
-
-    console.log(`Transaction successful: ${transactionHash}`);
-
-    await sendNotification({
-      title: "Congratulations!",
-      body: `You sent your a transaction, ${transactionHash}!`,
-    });
-  }, [sendNotification]);
-
-  return (
-    <Card title="Make Your First Transaction">
-      <div className="space-y-4">
-        <p className="text-[var(--app-foreground-muted)] mb-4">
-          Experience the power of seamless sponsored transactions with{" "}
-          <a
-            href="https://onchainkit.xyz"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#0052FF] hover:underline"
-          >
-            OnchainKit
-          </a>
-          .
-        </p>
-
-        <div className="flex flex-col items-center">
-          {address ? (
-            <Transaction
-              calls={calls}
-              onSuccess={handleSuccess}
-              onError={(error: TransactionError) =>
-                console.error("Transaction failed:", error)
-              }
-            >
-              <TransactionButton className="text-white text-md" />
-              <TransactionStatus>
-                <TransactionStatusAction />
-                <TransactionStatusLabel />
-              </TransactionStatus>
-              <TransactionToast className="mb-4">
-                <TransactionToastIcon />
-                <TransactionToastLabel />
-                <TransactionToastAction />
-              </TransactionToast>
-            </Transaction>
-          ) : (
-            <p className="text-yellow-400 text-sm text-center mt-2">
-              Connect your wallet to send a transaction
-            </p>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-}
