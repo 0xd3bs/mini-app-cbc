@@ -2,29 +2,13 @@
 
 import { type ReactNode, useState } from "react";
 import { useAccount } from "wagmi";
-import {
-  Swap,
-  SwapAmountInput,
-  SwapToggleButton,
-  SwapButton,
-  SwapMessage,
-  SwapToast,
-} from "@coinbase/onchainkit/swap";
+import { Buy } from "@coinbase/onchainkit/buy";
 import type { Token } from "@coinbase/onchainkit/token";
 
-// Define the tokens needed for the Swap component
-const USDC_TOKEN: Token = {
-  name: 'USD Coin',
-  address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
-  symbol: 'USDC',
-  decimals: 6,
-  image: 'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213-ZWUzYjJmZGUtMDYxNy00NDcyLTg0NjQtMWI4OGEwYjBiODE2',
-  chainId: 8453,
-};
-
+// Define the tokens needed for the Buy component
 const ETH_TOKEN: Token = {
   name: 'Ethereum',
-  address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // Use a common placeholder for native ETH
+  address: '', // Native token, no address
   symbol: 'ETH',
   decimals: 18,
   image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
@@ -33,7 +17,7 @@ const ETH_TOKEN: Token = {
 
 const WBTC_TOKEN: Token = {
     name: 'Wrapped BTC',
-    address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // Note: This is the Ethereum mainnet address, replace if different on Base
+    address: '0x1ceA84203673764244E05693e42E693406D3125A', // Address for WBTC on Base
     symbol: 'WBTC',
     decimals: 8,
     image: 'https://assets.coingecko.com/coins/images/759/large/wrapped_bitcoin_wbtc.png?1548822744',
@@ -145,7 +129,7 @@ type PredictionData = {
 };
 
 export function Home() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [predictionData, setPredictionData] = useState<PredictionData | null>(null);
 
@@ -174,23 +158,23 @@ export function Home() {
     }
   };
 
-  const isSwapDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
-  const tokenTo = predictionData?.prediction === 'positive' && predictionData.tokenToBuy 
+  const isBuyDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
+  const tokenToBuy = predictionData?.prediction === 'positive' && predictionData.tokenToBuy 
                   ? TOKEN_MAP[predictionData.tokenToBuy] 
                   : ETH_TOKEN; // Default to ETH if no prediction
 
-  const getSwapOverlayMessage = () => {
+  const getOverlayMessage = () => {
     if (!isConnected) {
       return "Connect your wallet to begin.";
     }
-    return "Run a positive prediction to enable swap.";
+    return "Run a positive prediction to enable buy.";
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <Card title="Buy or HODL?">
         <p className="text-[var(--app-foreground-muted)] mb-4">
-          Click the button to get a recommendation for your next swap.
+          Click the button to get a recommendation for your next buy.
         </p>
         <Button
           onClick={handlePredictionClick}
@@ -208,25 +192,24 @@ export function Home() {
 
         {isConnected && predictionData?.prediction === 'negative' && (
           <p className="text-[var(--app-foreground-muted)] mt-4 text-center">
-            Prediction is not favorable. No swap recommended at this time.
+            Prediction is not favorable. No buy recommended at this time.
           </p>
         )}
       </Card>
 
-      <Card title="Swap">
-        <fieldset disabled={isSwapDisabled} className="relative">
-          <Swap>
-            <SwapAmountInput label="From" token={USDC_TOKEN} type="from" />
-            <SwapToggleButton />
-            <SwapAmountInput label="To" token={tokenTo} type="to" />
-            <SwapButton />
-            <SwapMessage />
-            <SwapToast />
-          </Swap>
-          {isSwapDisabled && (
+      <Card title="Buy">
+        <fieldset disabled={isBuyDisabled} className="relative">
+          <Buy
+            address={address ?? '0x0000000000000000000000000000000000000000'}
+            token={tokenToBuy}
+            onSuccess={() => console.log('Buy success')}
+            onError={(error) => console.error('Buy error:', error)}
+            onExit={() => console.log('Buy exited')}
+          />
+          {isBuyDisabled && (
               <div className="absolute inset-0 bg-[var(--app-card-bg)] bg-opacity-50 flex items-center justify-center rounded-xl">
                   <p className="text-[var(--app-foreground-muted)] font-medium text-center px-4">
-                    {getSwapOverlayMessage()}
+                    {getOverlayMessage()}
                   </p>
               </div>
           )}
