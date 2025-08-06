@@ -1,6 +1,49 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
+import { useAccount } from "wagmi";
+import {
+  Swap,
+  SwapAmountInput,
+  SwapToggleButton,
+  SwapButton,
+  SwapMessage,
+  SwapToast,
+} from "@coinbase/onchainkit/swap";
+import type { Token } from "@coinbase/onchainkit/token";
+
+// Define the tokens needed for the Swap component
+const USDC_TOKEN: Token = {
+  name: 'USD Coin',
+  address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  symbol: 'USDC',
+  decimals: 6,
+  image: 'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213-ZWUzYjJmZGUtMDYxNy00NDcyLTg0NjQtMWI4OGEwYjBiODE2',
+  chainId: 8453,
+};
+
+const ETH_TOKEN: Token = {
+  name: 'Ethereum',
+  address: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', // Use a common placeholder for native ETH
+  symbol: 'ETH',
+  decimals: 18,
+  image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
+  chainId: 8453,
+};
+
+const WBTC_TOKEN: Token = {
+    name: 'Wrapped BTC',
+    address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', // Note: This is the Ethereum mainnet address, replace if different on Base
+    symbol: 'WBTC',
+    decimals: 8,
+    image: 'https://assets.coingecko.com/coins/images/759/large/wrapped_bitcoin_wbtc.png?1548822744',
+    chainId: 8453,
+};
+
+const TOKEN_MAP: { [key: string]: Token } = {
+  ETH: ETH_TOKEN,
+  WBTC: WBTC_TOKEN,
+};
 
 type ButtonProps = {
   children: ReactNode;
@@ -96,30 +139,103 @@ function Card({
   );
 }
 
+type PredictionData = {
+  prediction: 'positive' | 'negative';
+  tokenToBuy: 'ETH' | 'WBTC' | null;
+};
+
 export function Home() {
+  const { isConnected } = useAccount();
+  const [isLoading, setIsLoading] = useState(false);
+  const [predictionData, setPredictionData] = useState<PredictionData | null>(null);
+
+  /**
+   * Handles the click event for the "Run Prediction" button.
+   * It calls the prediction API and updates the component's state.
+   */
+  const handlePredictionClick = async () => {
+    setIsLoading(true);
+    setPredictionData(null); 
+    try {
+      const response = await fetch('/api/prediction', {
+        method: 'POST',
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Something went wrong');
+      }
+      setPredictionData(data);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+      setPredictionData({ prediction: 'negative', tokenToBuy: null });
+      console.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const isSwapDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
+  const tokenTo = predictionData?.prediction === 'positive' && predictionData.tokenToBuy 
+                  ? TOKEN_MAP[predictionData.tokenToBuy] 
+                  : ETH_TOKEN; // Default to ETH if no prediction
+
+  const getSwapOverlayMessage = () => {
+    if (!isConnected) {
+      return "Connect your wallet to begin.";
+    }
+    return "Run a positive prediction to enable swap.";
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <Card title="Smart Buy">
+      <Card title="Buy or HODL?">
         <p className="text-[var(--app-foreground-muted)] mb-4">
-          This is a minimalistic Mini App built with OnchainKit components.
+          Click the button to get a recommendation for your next swap.
         </p>
         <Button
-          onClick={() => {
-            // TODO: Implement Buy functionality
-            console.log("Buy button clicked!");
-          }}
+          onClick={handlePredictionClick}
+          disabled={isLoading || !isConnected}
           className="w-full"
         >
-          Buy
+          {isLoading ? 'Running Prediction...' : 'Run Prediction'}
         </Button>
+
+        {!isConnected && (
+          <p className="text-[var(--app-foreground-muted)] mt-4 text-center text-xs">
+            Please connect your wallet to run a prediction.
+          </p>
+        )}
+
+        {isConnected && predictionData?.prediction === 'negative' && (
+          <p className="text-[var(--app-foreground-muted)] mt-4 text-center">
+            Prediction is not favorable. No swap recommended at this time.
+          </p>
+        )}
       </Card>
 
-      <Card title="Recent Activity">
-        <TransactionHistory />
+      <Card title="Swap">
+        <fieldset disabled={isSwapDisabled} className="relative">
+          <Swap>
+            <SwapAmountInput label="From" token={USDC_TOKEN} type="from" />
+            <SwapToggleButton />
+            <SwapAmountInput label="To" token={tokenTo} type="to" />
+            <SwapButton />
+            <SwapMessage />
+            <SwapToast />
+          </Swap>
+          {isSwapDisabled && (
+              <div className="absolute inset-0 bg-[var(--app-card-bg)] bg-opacity-50 flex items-center justify-center rounded-xl">
+                  <p className="text-[var(--app-foreground-muted)] font-medium text-center px-4">
+                    {getSwapOverlayMessage()}
+                  </p>
+              </div>
+          )}
+        </fieldset>
       </Card>
     </div>
   );
 }
+
 
 type IconProps = {
   name: "heart" | "star" | "check" | "plus" | "arrow-right";
@@ -221,119 +337,6 @@ export function Icon({ name, size = "md", className = "" }: IconProps) {
   );
 }
 
-function TransactionHistory() {
-  const initialTransactions = [
-    {
-      id: '0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f',
-      tokenFrom: 'USDC',
-      amountFrom: 100,
-      tokenTo: 'ETH',
-      amountTo: 0.3,
-      timestamp: '5 minutes ago',
-    },
-    {
-      id: '0x2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g',
-      tokenFrom: 'USDC',
-      amountFrom: 100,
-      tokenTo: 'BTC',
-      amountTo: 0.0009,
-      timestamp: '1 hour ago',
-    },
-    {
-      id: '0x3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f3g4h',
-      tokenFrom: 'USDC',
-      amountFrom: 100,
-      tokenTo: 'ETH',
-      amountTo: 0.3,
-      timestamp: '3 hours ago',
-    },
-  ];
-
-  const [transactions, setTransactions] = useState(initialTransactions);
-
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(transactions.filter((tx) => tx.id !== id));
-  };
-
-  const handleClearAll = () => {
-    setTransactions([]);
-  };
-
-  const SwapIcon = () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5 text-[var(--app-foreground-muted)]"
-    >
-      <path d="M16 3h5v5" />
-      <path d="M4 20 21 3" />
-      <path d="M21 16v5h-5" />
-      <path d="M15 15h6v6" />
-      <path d="M3 4l7 7" />
-    </svg>
-  );
-
-  return (
-    <div className="space-y-4">
-      {transactions.length > 0 ? (
-        <>
-          <ul className="space-y-3">
-            {transactions.map((tx) => (
-              <li key={tx.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-[var(--app-gray-light)] transition-colors group">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-[var(--app-gray)] rounded-full">
-                    <SwapIcon />
-                  </div>
-                  <div>
-                    <p className="font-medium text-[var(--app-foreground)]">
-                      Swap {tx.amountFrom} {tx.tokenFrom} for {tx.amountTo} {tx.tokenTo}
-                    </p>
-                    <p className="text-sm text-[var(--app-foreground-muted)]">
-                      {tx.timestamp}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                   <a
-                    href={`https://basescan.org/tx/${tx.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[var(--app-accent)] hover:underline"
-                  >
-                    <Icon name="arrow-right" size="sm" />
-                  </a>
-                  <button
-                    onClick={() => handleDeleteTransaction(tx.id)}
-                    className="opacity-0 group-hover:opacity-100 text-[var(--app-foreground-muted)] hover:text-[var(--app-foreground)] transition-opacity"
-                    aria-label="Delete transaction"
-                  >
-                    &times;
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="flex justify-end pt-2">
-            <Button variant="ghost" size="sm" onClick={handleClearAll}>
-              Clear All
-            </Button>
-          </div>
-        </>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-[var(--app-foreground-muted)]">No recent activity.</p>
-        </div>
-      )}
-    </div>
-  );
-}
 
 
 

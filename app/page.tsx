@@ -22,7 +22,6 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "./components/Components";
 import { Icon } from "./components/Components";
 import { Home } from "./components/Components";
-import { WalletInfo } from './components/WalletInfo';
 
 export default function App() {
   const { setFrameReady, isFrameReady, context } = useMiniKit();
@@ -96,7 +95,6 @@ export default function App() {
 
         <main className="flex-1">
           <Home />
-          <WalletInfo />
         </main>
 
         <footer className="mt-2 pt-4 flex justify-center">
