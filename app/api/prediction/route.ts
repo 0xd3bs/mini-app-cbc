@@ -8,7 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
  * @param {NextRequest} req - The incoming request object.
  * @returns {Promise<NextResponse>} A promise that resolves to the response.
  */
-export async function POST(req: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_req: NextRequest) {
   // Simulate a delay to make the API call feel more realistic
   await new Promise(resolve => setTimeout(resolve, 1500));
 
