@@ -135,7 +135,7 @@ function Card({
 
 type PredictionData = {
   prediction: 'positive' | 'negative';
-  tokenToBuy: 'ETH' | null;
+  tokenToBuy: 'ETH' | 'WBTC' | null;
 };
 
 export function Home() {
@@ -212,9 +212,6 @@ export function Home() {
             Prediction is not favorable. No buy recommended at this time.
           </p>
         )}
-      </Card>
-
-      <Card title="Smart Swap">
         <fieldset disabled={isBuyDisabled} className="relative">
           <SwapDefault
             key={swapKey}
@@ -230,7 +227,7 @@ export function Home() {
           <p className="mt-4 text-center text-sm text-[var(--app-foreground-muted)]">
             {getOverlayMessage()}
           </p>
-        )}
+        )}        
       </Card>
     </div>
   );

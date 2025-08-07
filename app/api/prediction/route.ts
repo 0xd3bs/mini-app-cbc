@@ -15,9 +15,9 @@ export async function POST(_req: NextRequest) {
 
   try {
     // Simulate a random prediction result
+    //{ prediction: 'positive', tokenToBuy: 'WBTC' },
     const outcomes = [
       { prediction: 'positive', tokenToBuy: 'ETH' },
-      { prediction: 'positive', tokenToBuy: 'WBTC' },
       { prediction: 'negative', tokenToBuy: null },
     ];
     const randomOutcome = outcomes[Math.floor(Math.random() * outcomes.length)];
