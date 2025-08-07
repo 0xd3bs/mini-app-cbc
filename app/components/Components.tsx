@@ -142,12 +142,14 @@ export function Home() {
   const { address, isConnected } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [predictionData, setPredictionData] = useState<PredictionData | null>(null);
+  const [swapKey, setSwapKey] = useState(0);
 
   /**
    * Handles the click event for the "Run Prediction" button.
    * It calls the prediction API and updates the component's state.
    */
   const handlePredictionClick = async () => {
+    setSwapKey(prevKey => prevKey + 1); // Reset the swap component
     setIsLoading(true);
     setPredictionData(null); 
     try {
@@ -215,6 +217,7 @@ export function Home() {
       <Card title="Smart Swap">
         <fieldset disabled={isBuyDisabled} className="relative">
           <SwapDefault
+            key={swapKey}
             className="swap-container"
             from={[USDC_TOKEN]}
             to={[tokenToBuy]}            
