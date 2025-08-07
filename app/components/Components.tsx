@@ -2,7 +2,7 @@
 
 import { type ReactNode, useState } from "react";
 import { useAccount } from "wagmi";
-import { Buy } from "@coinbase/onchainkit/buy";
+import { SwapDefault } from '@coinbase/onchainkit/swap'; 
 import type { Token } from "@coinbase/onchainkit/token";
 
 
@@ -25,9 +25,19 @@ const WBTC_TOKEN: Token = {
     chainId: 8453,
 };
 
+const USDC_TOKEN: Token = {
+    name: 'USDC',
+    address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Address for USDC on Base
+    symbol: 'USDC',
+    decimals: 6,
+    image: 'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213-ZWUzYjJmZGUtMDYxNy00NDcyLTg0NjQtMWI4OGEwYjBiODE2',
+    chainId: 8453,
+};
+
 const TOKEN_MAP: { [key: string]: Token } = {
   ETH: ETH_TOKEN,
   WBTC: WBTC_TOKEN,
+  USDC: USDC_TOKEN,
 };
 
 type ButtonProps = {
@@ -203,12 +213,11 @@ export function Home() {
         )}
       </Card>
 
-      <Card title="Buy">
+      <Card title="Smart Swap">
         <fieldset disabled={isBuyDisabled} className="relative">
-          <Buy
-            onSuccess={() => console.log('Buy success')}
-            onError={(error) => console.error('Buy error:', error)}
-            toToken={tokenToBuy}
+          <SwapDefault
+            from={[USDC_TOKEN]}
+            to={[tokenToBuy]}            
           />
           {isBuyDisabled && (
             <div className="absolute inset-0 cursor-not-allowed rounded-xl bg-[var(--app-card-bg)] bg-opacity-50" />
