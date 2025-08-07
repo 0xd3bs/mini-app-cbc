@@ -36,7 +36,7 @@ const USDC_TOKEN: Token = {
 
 const TOKEN_MAP: { [key: string]: Token } = {
   ETH: ETH_TOKEN,
-  //WBTC: WBTC_TOKEN,
+  WBTC: WBTC_TOKEN,
 };
 
 type ButtonProps = {
@@ -135,7 +135,7 @@ function Card({
 
 type PredictionData = {
   prediction: 'positive' | 'negative';
-  tokenToBuy: 'ETH' | 'WBTC' | null;
+  tokenToBuy: 'ETH' | null;
 };
 
 export function Home() {
