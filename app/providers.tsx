@@ -9,7 +9,7 @@ export function Providers(props: { children: ReactNode }) {
     <MiniKitProvider
       apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
       chain={base}
-      projectId={process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID}
+      projectId={process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_ID}
       config={{        
         appearance: {
           mode: "auto",

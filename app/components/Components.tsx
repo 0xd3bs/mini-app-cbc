@@ -5,6 +5,7 @@ import { useAccount } from "wagmi";
 import { Buy } from "@coinbase/onchainkit/buy";
 import type { Token } from "@coinbase/onchainkit/token";
 
+
 // Define the tokens needed for the Buy component
 const ETH_TOKEN: Token = {
   name: 'Ethereum',
@@ -17,7 +18,7 @@ const ETH_TOKEN: Token = {
 
 const WBTC_TOKEN: Token = {
     name: 'Wrapped BTC',
-    address: '0x1ceA84203673764244E05693e42E693406D3125A', // Address for WBTC on Base
+    address: '0x0555E30da8f98308EdB960aa94C0Db47230d2B9c', // Address for WBTC on Base
     symbol: 'WBTC',
     decimals: 8,
     image: 'https://assets.coingecko.com/coins/images/759/large/wrapped_bitcoin_wbtc.png?1548822744',
@@ -176,6 +177,11 @@ export function Home() {
         <p className="text-[var(--app-foreground-muted)] mb-4">
           Click the button to get a recommendation for your next buy.
         </p>
+        {isConnected && address && (
+          <p className="text-[var(--app-foreground-muted)] mb-4 text-xs truncate">
+            Connected: {address}
+          </p>
+        )}
         <Button
           onClick={handlePredictionClick}
           disabled={isLoading || !isConnected}
@@ -200,20 +206,19 @@ export function Home() {
       <Card title="Buy">
         <fieldset disabled={isBuyDisabled} className="relative">
           <Buy
-            address={address ?? '0x0000000000000000000000000000000000000000'}
-            token={tokenToBuy}
             onSuccess={() => console.log('Buy success')}
             onError={(error) => console.error('Buy error:', error)}
-            onExit={() => console.log('Buy exited')}
+            toToken={tokenToBuy}
           />
           {isBuyDisabled && (
-              <div className="absolute inset-0 bg-[var(--app-card-bg)] bg-opacity-50 flex items-center justify-center rounded-xl">
-                  <p className="text-[var(--app-foreground-muted)] font-medium text-center px-4">
-                    {getOverlayMessage()}
-                  </p>
-              </div>
+            <div className="absolute inset-0 cursor-not-allowed rounded-xl bg-[var(--app-card-bg)] bg-opacity-50" />
           )}
         </fieldset>
+        {isBuyDisabled && (
+          <p className="mt-4 text-center text-sm text-[var(--app-foreground-muted)]">
+            {getOverlayMessage()}
+          </p>
+        )}
       </Card>
     </div>
   );
