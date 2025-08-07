@@ -215,6 +215,7 @@ export function Home() {
       <Card title="Smart Swap">
         <fieldset disabled={isBuyDisabled} className="relative">
           <SwapDefault
+            className="swap-container"
             from={[USDC_TOKEN]}
             to={[tokenToBuy]}            
           />

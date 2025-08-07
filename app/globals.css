@@ -23,3 +23,8 @@ body {
   font-style: normal;
   font-size: 80%;
 }
+
+/* Custom styles for OnchainKit Swap component */
+.swap-container input[type="text"] {
+  font-size: 1.25rem !important; /* Adjust font size to be smaller */
+}
