@@ -170,6 +170,12 @@ export function Home() {
     }
   };
 
+  const handleSwapSuccess = () => {
+    console.log("Swap successful, resetting component and prediction state.");
+    setSwapKey(prevKey => prevKey + 1);
+    setPredictionData(null);
+  };
+
   const isBuyDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
   const tokenToBuy = predictionData?.prediction === 'positive' && predictionData.tokenToBuy 
                   ? TOKEN_MAP[predictionData.tokenToBuy] 
@@ -216,6 +222,7 @@ export function Home() {
           <SwapDefault
             key={swapKey}
             className="swap-container"
+            onSuccess={handleSwapSuccess}
             from={[USDC_TOKEN]}
             to={[tokenToBuy]}            
           />
