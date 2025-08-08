@@ -4,6 +4,7 @@ import { type ReactNode, useState } from "react";
 import { useAccount } from "wagmi";
 import { SwapDefault } from '@coinbase/onchainkit/swap'; 
 import type { Token } from "@coinbase/onchainkit/token";
+import { PredictionResponse } from "@/lib/types";
 
 
 // Define the tokens needed for the Buy component
@@ -133,27 +134,28 @@ function Card({
   );
 }
 
-type PredictionData = {
-  prediction: 'positive' | 'negative';
-  tokenToBuy: 'ETH' | 'WBTC' | null;
-};
-
 export function Home() {
   const { address, isConnected } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
-  const [predictionData, setPredictionData] = useState<PredictionData | null>(null);
+  const [predictionData, setPredictionData] = useState<PredictionResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [swapKey, setSwapKey] = useState(0);
 
   /**
    * Handles the click event for the "Run Prediction" button.
    * It calls the prediction API and updates the component's state.
    */
-  const handlePredictionClick = async () => {
+  const handleRunPrediction = async () => {
     setSwapKey(prevKey => prevKey + 1); // Reset the swap component
     setIsLoading(true);
-    setPredictionData(null); 
+    setPredictionData(null);
+    setError(null);
     try {
-      const response = await fetch('/api/prediction', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        throw new Error("NEXT_PUBLIC_API_URL is not defined in .env.local");
+      }
+      const response = await fetch(apiUrl, {
         method: 'POST',
       });
       const data = await response.json();
@@ -161,9 +163,9 @@ export function Home() {
         throw new Error(data.message || 'Something went wrong');
       }
       setPredictionData(data);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-      setPredictionData({ prediction: 'negative', tokenToBuy: null });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(errorMessage);
       console.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -174,10 +176,11 @@ export function Home() {
     console.log("Swap successful, resetting component and prediction state.");
     setSwapKey(prevKey => prevKey + 1);
     setPredictionData(null);
+    setError(null);
   };
 
   const isBuyDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
-  const tokenToBuy = predictionData?.prediction === 'positive' && predictionData.tokenToBuy 
+  const tokenToBuy = predictionData?.prediction === 'positive' && predictionData.tokenToBuy && TOKEN_MAP[predictionData.tokenToBuy]
                   ? TOKEN_MAP[predictionData.tokenToBuy] 
                   : ETH_TOKEN; // Default to ETH if no prediction
 
@@ -200,7 +203,7 @@ export function Home() {
           </p>
         )}
         <Button
-          onClick={handlePredictionClick}
+          onClick={handleRunPrediction}
           disabled={isLoading || !isConnected}
           className="w-full"
         >
@@ -213,12 +216,26 @@ export function Home() {
           </p>
         )}
 
-        {isConnected && predictionData?.prediction === 'negative' && (
-          <p className="text-[var(--app-foreground-muted)] mt-4 text-center">
-            Prediction is not favorable. No buy recommended at this time.
+        {error && (
+          <p className="text-red-500 mt-4 text-center">
+            Error: {error}
           </p>
         )}
-        <fieldset disabled={isBuyDisabled} className="relative">
+
+        {predictionData && !error && (
+          <div className="mt-4 text-center">
+            <p className={`font-bold ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
+              Prediction: {predictionData.prediction === 'positive' ? 'Positive' : 'Negative'}
+            </p>
+            {predictionData.prediction === 'negative' && (
+              <p className="text-[var(--app-foreground-muted)] text-sm">
+                No buy recommended at this time.
+              </p>
+            )}
+          </div>
+        )}
+
+        <fieldset disabled={isBuyDisabled} className="relative mt-4">
           <SwapDefault
             key={swapKey}
             className="swap-container"
