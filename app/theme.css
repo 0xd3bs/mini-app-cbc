@@ -16,6 +16,17 @@
   --app-gray-dark: #e0e0e0;
   --app-card-bg: rgba(255, 255, 255, 0.4);
   --app-card-border: rgba(0, 0, 0, 0.1);
+  --feedback-height: 2rem;
+  --overlay-helper-height: 1.25rem;
+  /* Spacing tokens to avoid magic numbers in components */
+  --space-feedback-top: 0.5rem; /* was mt-2 */
+  --space-swap-top: 0.25rem;    /* was mt-1 */
+  --space-help-bottom: 0.5rem;  /* was mb-2 */
+  --space-overlay-top: 0.5rem;  /* was mt-2 under swap */
+  --space-pointer-top: 0.25rem; /* spacing above the pointer emoji */
+  --pointer-font-size: 0.875rem;    /* pointer emoji size (subtle) */
+  --pointer-offset: 0.5rem;         /* absolute offset above swap (subtle) */
+  --pointer-height: 0.875rem;       /* fixed height to avoid reflow/cropping */
 }
 
 @media (prefers-color-scheme: dark) {

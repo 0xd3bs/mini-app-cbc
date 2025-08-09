@@ -156,6 +156,8 @@ export function Home() {
     }
   }, [isConnected]);
 
+  
+
   /**
    * Handles the click event for the "Run Prediction" button.
    * It calls the prediction API and updates the component's state.
@@ -206,10 +208,15 @@ export function Home() {
         </p>
       </div>
 
-      <Card title="Buy or HODL?">
+      <Card title="Buy or WAIT?">
         <p className="text-[var(--app-foreground-muted)] mb-4">
-          Click the button to get a recommendation for your next buy.
+          🧠 ML model analyzes the market and tells you: buy more or just wait!
         </p>
+        {!isConnected && (
+          <p className="text-[var(--app-foreground-muted)] text-center text-xs" style={{ marginTop: 'var(--space-feedback-top)', marginBottom: 'var(--space-help-bottom)' }}>
+            Click the button to get a recommendation for your next buy.
+          </p>
+        )}        
 
         <Button
           onClick={handleRunPrediction}
@@ -219,35 +226,35 @@ export function Home() {
           {isLoading ? 'Running Prediction...' : 'Run Prediction'}
         </Button>
 
-        {!isConnected && (
-          <p className="text-[var(--app-foreground-muted)] mt-4 text-center text-xs">
-            Please connect your wallet to run a prediction.
-          </p>
-        )}
-
-        <div className="mt-4 text-center h-12 flex flex-col justify-center">
-          {isLoading ? (
-            <p className="text-[var(--app-foreground-muted)]">Running Prediction...</p>
-          ) : error ? (
+        <div className="text-center flex flex-col justify-center" style={{ height: 'var(--feedback-height)', marginTop: 'var(--space-feedback-top)' }}>
+          {error ? (
             <p className="text-red-500">Error: {error}</p>
           ) : predictionData ? (
             <div>
-              <p className={`font-bold ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
-                Prediction: {predictionData.prediction === 'positive' ? 'Positive' : 'Negative'}
+              <p className={`font-bold leading-tight ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-yellow-500'}`}>
+                Prediction: {predictionData.prediction === 'positive' ? 'BUY Opportunity' : 'WAIT Period'}
               </p>
+              {predictionData.prediction === 'positive' && (
+                <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
+                  Good time to enter the market.
+                </p>
+              )}              
               {predictionData.prediction === 'negative' && (
-                <p className="text-sm text-[var(--app-foreground-muted)]">
-                  No buy recommended at this time.
+                <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
+                  Market signals suggest waiting.
                 </p>
               )}
             </div>
-          ) : (
-            <p>&nbsp;</p>
-          )}
+          ) : null}
         </div>
 
-        <fieldset disabled={isBuyDisabled} className="relative mt-4">
-          <Swap key={swapKey}>
+          <div className="w-full text-center" style={{ height: 'var(--pointer-height)' }}>
+            {!isBuyDisabled && (
+              <span style={{ fontSize: 'var(--pointer-font-size)' }}>👇</span>
+            )}
+          </div>
+          <fieldset disabled={isBuyDisabled} className="relative" style={{ marginTop: 'var(--space-swap-top)' }}>
+            <Swap key={swapKey}>
             <div className="swap-container">
               <div className="relative">
                 <SwapAmountInput
@@ -271,12 +278,14 @@ export function Home() {
           {isBuyDisabled && (
             <div className="absolute inset-0 cursor-not-allowed rounded-xl bg-[var(--app-card-bg)] bg-opacity-50" />
           )}
-        </fieldset>
-        {isBuyDisabled && (
-          <p className="mt-4 text-center text-sm text-[var(--app-foreground-muted)]">
-            {getOverlayMessage()}
-          </p>
-        )}        
+          </fieldset>
+        <div style={{ height: 'var(--overlay-helper-height)', marginTop: 'var(--space-overlay-top)' }}>
+          {isBuyDisabled ? (
+            <p className="text-center text-xs text-[var(--app-foreground-muted)]">
+              {getOverlayMessage()}
+            </p>
+          ) : null}
+        </div>       
       </Card>
     </div>
   );
