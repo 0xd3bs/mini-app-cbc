@@ -171,6 +171,15 @@ export function Home() {
       if (!apiUrl) {
         throw new Error("NEXT_PUBLIC_API_URL is not defined in .env.local");
       }
+
+      // DOCS: This `fetch` call targets the URL specified in the `NEXT_PUBLIC_API_URL`
+      // environment variable. Because this component is a Client Component ("use client"),
+      // this request is made directly from the user's browser, not from the Next.js server.
+      //
+      // - If NEXT_PUBLIC_API_URL is an absolute URL (e.g., https://api.example.com),
+      //   the browser calls that external endpoint directly.
+      // - If it were a relative path (e.g., /api/prediction), the browser would call the
+      //   Next.js API route at `app/api/prediction/route.ts` on the same domain.
       const response = await fetch(apiUrl, {
         method: 'POST',
       });
