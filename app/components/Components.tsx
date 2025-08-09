@@ -1,8 +1,15 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { SwapDefault } from '@coinbase/onchainkit/swap'; 
+import {
+  Swap,
+  SwapAmountInput,
+  SwapButton,
+  SwapMessage,
+  SwapToast,
+} from '@coinbase/onchainkit/swap';
+
 import type { Token } from "@coinbase/onchainkit/token";
 import { PredictionResponse } from "@/lib/types";
 
@@ -13,7 +20,7 @@ const ETH_TOKEN: Token = {
   address: '', // Native token, no address
   symbol: 'ETH',
   decimals: 18,
-  image: 'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
+  image: '/eth.png',
   chainId: 8453,
 };
 
@@ -22,7 +29,7 @@ const WBTC_TOKEN: Token = {
     address: '0x0555E30da8f98308EdB960aa94C0Db47230d2B9c', // Address for WBTC on Base
     symbol: 'WBTC',
     decimals: 8,
-    image: 'https://assets.coingecko.com/coins/images/759/large/wrapped_bitcoin_wbtc.png?1548822744',
+    image: '/wbtc.png',
     chainId: 8453,
 };
 
@@ -31,7 +38,7 @@ const USDC_TOKEN: Token = {
     address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Address for USDC on Base
     symbol: 'USDC',
     decimals: 6,
-    image: 'https://dynamic-assets.coinbase.com/3c15df5e2ac7d4abbe9499ed9335041f00c620f28e8de2f93474a9f432058742cdf4674bd43f309e69778a26969372310135be97eb183d91c492154176d455b8/asset_icons/9d67b728b6c8f457717154b3a35f9ddc702eae7e76c4684ee39302c4d7fd0bb8.png',
+    image: '/usdc.png',
     chainId: 8453,
 };
 
@@ -135,18 +142,25 @@ function Card({
 }
 
 export function Home() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [predictionData, setPredictionData] = useState<PredictionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [swapKey, setSwapKey] = useState(0);
+
+  useEffect(() => {
+    // Si el usuario no está conectado, resetea el componente Swap y los datos de predicción.
+    if (!isConnected) {
+      setSwapKey(prevKey => prevKey + 1);
+      setPredictionData(null);
+    }
+  }, [isConnected]);
 
   /**
    * Handles the click event for the "Run Prediction" button.
    * It calls the prediction API and updates the component's state.
    */
   const handleRunPrediction = async () => {
-    setSwapKey(prevKey => prevKey + 1); // Reset the swap component
     setIsLoading(true);
     setPredictionData(null);
     setError(null);
@@ -172,13 +186,6 @@ export function Home() {
     }
   };
 
-  const handleSwapSuccess = () => {
-    console.log("Swap successful, resetting component and prediction state.");
-    setSwapKey(prevKey => prevKey + 1);
-    setPredictionData(null);
-    setError(null);
-  };
-
   const isBuyDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
   const tokenToBuy = predictionData?.prediction === 'positive' && predictionData.tokenToBuy && TOKEN_MAP[predictionData.tokenToBuy]
                   ? TOKEN_MAP[predictionData.tokenToBuy] 
@@ -193,15 +200,17 @@ export function Home() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <div className="text-center text-xs text-[var(--app-foreground-muted)]">
+        <p>
+          Disclaimer: This is an experimental app. All information provided is for informational purposes only and is not financial advice. Use at your own risk.
+        </p>
+      </div>
+
       <Card title="Buy or HODL?">
         <p className="text-[var(--app-foreground-muted)] mb-4">
           Click the button to get a recommendation for your next buy.
         </p>
-        {isConnected && address && (
-          <p className="text-[var(--app-foreground-muted)] mb-4 text-xs truncate">
-            Connected: {address}
-          </p>
-        )}
+
         <Button
           onClick={handleRunPrediction}
           disabled={isLoading || !isConnected}
@@ -216,33 +225,49 @@ export function Home() {
           </p>
         )}
 
-        {error && (
-          <p className="text-red-500 mt-4 text-center">
-            Error: {error}
-          </p>
-        )}
-
-        {predictionData && !error && (
-          <div className="mt-4 text-center">
-            <p className={`font-bold ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
-              Prediction: {predictionData.prediction === 'positive' ? 'Positive' : 'Negative'}
-            </p>
-            {predictionData.prediction === 'negative' && (
-              <p className="text-[var(--app-foreground-muted)] text-sm">
-                No buy recommended at this time.
+        <div className="mt-4 text-center h-12 flex flex-col justify-center">
+          {isLoading ? (
+            <p className="text-[var(--app-foreground-muted)]">Running Prediction...</p>
+          ) : error ? (
+            <p className="text-red-500">Error: {error}</p>
+          ) : predictionData ? (
+            <div>
+              <p className={`font-bold ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
+                Prediction: {predictionData.prediction === 'positive' ? 'Positive' : 'Negative'}
               </p>
-            )}
-          </div>
-        )}
+              {predictionData.prediction === 'negative' && (
+                <p className="text-sm text-[var(--app-foreground-muted)]">
+                  No buy recommended at this time.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>&nbsp;</p>
+          )}
+        </div>
 
         <fieldset disabled={isBuyDisabled} className="relative mt-4">
-          <SwapDefault
-            key={swapKey}
-            className="swap-container"
-            onSuccess={handleSwapSuccess}
-            from={[USDC_TOKEN]}
-            to={[tokenToBuy]}            
-          />
+          <Swap key={swapKey}>
+            <div className="swap-container">
+              <div className="relative">
+                <SwapAmountInput
+                  label="Sell"
+                  token={USDC_TOKEN}
+                  type="from"
+                />
+              </div>
+              <div className="relative">
+                <SwapAmountInput
+                  label="Buy"
+                  token={tokenToBuy}
+                  type="to"                
+                />
+              </div>
+              <SwapButton />
+              <SwapMessage />
+              <SwapToast />
+            </div>
+          </Swap>
           {isBuyDisabled && (
             <div className="absolute inset-0 cursor-not-allowed rounded-xl bg-[var(--app-card-bg)] bg-opacity-50" />
           )}
