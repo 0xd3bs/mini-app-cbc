@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "clean": "npx rimraf node_modules package-lock.json .cache .next .nuxt dist out"
   },
   "dependencies": {
     "@coinbase/onchainkit": "latest",
