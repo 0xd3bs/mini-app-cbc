@@ -142,7 +142,7 @@ function Card({
 }
 
 export function Home() {
-  const { address, isConnected } = useAccount();
+  const { isConnected } = useAccount();
   const [isLoading, setIsLoading] = useState(false);
   const [predictionData, setPredictionData] = useState<PredictionResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -200,15 +200,17 @@ export function Home() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <div className="text-center text-xs text-[var(--app-foreground-muted)]">
+        <p>
+          Disclaimer: This is an experimental app. All information provided is for informational purposes only and is not financial advice. Use at your own risk.
+        </p>
+      </div>
+
       <Card title="Buy or HODL?">
         <p className="text-[var(--app-foreground-muted)] mb-4">
           Click the button to get a recommendation for your next buy.
         </p>
-        {isConnected && address && (
-          <p className="text-[var(--app-foreground-muted)] mb-4 text-xs truncate">
-            Connected: {address}
-          </p>
-        )}
+
         <Button
           onClick={handleRunPrediction}
           disabled={isLoading || !isConnected}
@@ -276,12 +278,6 @@ export function Home() {
           </p>
         )}        
       </Card>
-
-      <div className="mt-6 text-center text-xs text-[var(--app-foreground-muted)]">
-        <p>
-          Disclaimer: This is an experimental app. All information provided is for informational purposes only and is not financial advice. Use at your own risk.
-        </p>
-      </div>
     </div>
   );
 }
