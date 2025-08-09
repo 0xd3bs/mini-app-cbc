@@ -1,8 +1,15 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import { useAccount } from "wagmi";
-import { SwapDefault } from '@coinbase/onchainkit/swap'; 
+import {
+  Swap,
+  SwapAmountInput,
+  SwapButton,
+  SwapMessage,
+  SwapToast,
+} from '@coinbase/onchainkit/swap';
+
 import type { Token } from "@coinbase/onchainkit/token";
 import { PredictionResponse } from "@/lib/types";
 
@@ -141,12 +148,19 @@ export function Home() {
   const [error, setError] = useState<string | null>(null);
   const [swapKey, setSwapKey] = useState(0);
 
+  useEffect(() => {
+    // Si el usuario no está conectado, resetea el componente Swap y los datos de predicción.
+    if (!isConnected) {
+      setSwapKey(prevKey => prevKey + 1);
+      setPredictionData(null);
+    }
+  }, [isConnected]);
+
   /**
    * Handles the click event for the "Run Prediction" button.
    * It calls the prediction API and updates the component's state.
    */
   const handleRunPrediction = async () => {
-    setSwapKey(prevKey => prevKey + 1); // Reset the swap component
     setIsLoading(true);
     setPredictionData(null);
     setError(null);
@@ -170,13 +184,6 @@ export function Home() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSwapSuccess = () => {
-    console.log("Swap successful, resetting component and prediction state.");
-    setSwapKey(prevKey => prevKey + 1);
-    setPredictionData(null);
-    setError(null);
   };
 
   const isBuyDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
@@ -216,33 +223,49 @@ export function Home() {
           </p>
         )}
 
-        {error && (
-          <p className="text-red-500 mt-4 text-center">
-            Error: {error}
-          </p>
-        )}
-
-        {predictionData && !error && (
-          <div className="mt-4 text-center">
-            <p className={`font-bold ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
-              Prediction: {predictionData.prediction === 'positive' ? 'Positive' : 'Negative'}
-            </p>
-            {predictionData.prediction === 'negative' && (
-              <p className="text-[var(--app-foreground-muted)] text-sm">
-                No buy recommended at this time.
+        <div className="mt-4 text-center h-12 flex flex-col justify-center">
+          {isLoading ? (
+            <p className="text-[var(--app-foreground-muted)]">Running Prediction...</p>
+          ) : error ? (
+            <p className="text-red-500">Error: {error}</p>
+          ) : predictionData ? (
+            <div>
+              <p className={`font-bold ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
+                Prediction: {predictionData.prediction === 'positive' ? 'Positive' : 'Negative'}
               </p>
-            )}
-          </div>
-        )}
+              {predictionData.prediction === 'negative' && (
+                <p className="text-sm text-[var(--app-foreground-muted)]">
+                  No buy recommended at this time.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p>&nbsp;</p>
+          )}
+        </div>
 
         <fieldset disabled={isBuyDisabled} className="relative mt-4">
-          <SwapDefault
-            key={swapKey}
-            className="swap-container"
-            onSuccess={handleSwapSuccess}
-            from={[USDC_TOKEN]}
-            to={[tokenToBuy]}            
-          />
+          <Swap key={swapKey}>
+            <div className="swap-container">
+              <div className="relative">
+                <SwapAmountInput
+                  label="Sell"
+                  token={USDC_TOKEN}
+                  type="from"
+                />
+              </div>
+              <div className="relative">
+                <SwapAmountInput
+                  label="Buy"
+                  token={tokenToBuy}
+                  type="to"                
+                />
+              </div>
+              <SwapButton />
+              <SwapMessage />
+              <SwapToast />
+            </div>
+          </Swap>
           {isBuyDisabled && (
             <div className="absolute inset-0 cursor-not-allowed rounded-xl bg-[var(--app-card-bg)] bg-opacity-50" />
           )}
