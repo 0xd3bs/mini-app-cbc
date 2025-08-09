@@ -276,6 +276,12 @@ export function Home() {
           </p>
         )}        
       </Card>
+
+      <div className="mt-6 text-center text-xs text-[var(--app-foreground-muted)]">
+        <p>
+          Disclaimer: This is an experimental app. All information provided is for informational purposes only and is not financial advice. Use at your own risk.
+        </p>
+      </div>
     </div>
   );
 }
