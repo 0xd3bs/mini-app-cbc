@@ -183,10 +183,13 @@ export function Home() {
       const response = await fetch(apiUrl, {
         method: 'POST',
       });
-      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        // Handle internal server errors or other non-ok responses
+        throw new Error('An internal error occurred. Please try again later.');
       }
+
+      const data: PredictionResponse = await response.json();
       setPredictionData(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
