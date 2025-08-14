@@ -1,112 +1,83 @@
-# MiniKit Template
+# Buy or WAIT? - A Base Mini App
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-onchain --mini`](), configured with:
+This project is a "Mini App" for the Base blockchain that provides users with a simple, ML-driven recommendation: whether it's a good time to **buy** crypto or if they should **wait**. It's built with the [MiniKit](https://docs.base.org/builderkits/minikit/overview) template for [Next.js](https://nextjs.org) and integrates [OnchainKit](https://www.base.org/builders/onchainkit) for wallet interactions and swaps.
 
-- [MiniKit](https://docs.base.org/builderkits/minikit/overview)
-- [OnchainKit](https://www.base.org/builders/onchainkit)
-- [Tailwind CSS](https://tailwindcss.com)
-- [Next.js](https://nextjs.org/docs)
+The application's core feature is a prediction engine that analyzes market conditions (currently simulated) and advises the user on their next move.
+
+## Core Features
+
+-   **🧠 ML-Powered Predictions:** A backend endpoint simulates a machine learning model to provide a "BUY" or "WAIT" signal.
+-   **🔄 Integrated Crypto Swaps:** Utilizes the OnchainKit `<Swap />` component to allow users to instantly buy crypto (`ETH` or `WBTC`) with `USDC` when a "BUY" opportunity is identified.
+-   **💡 Dynamic UI:** The user interface responds to the prediction, enabling or disabling the swap functionality accordingly.
+-   **🔗 Wallet Connectivity:** Uses Wagmi and OnchainKit to seamlessly connect to the user's wallet.
+-   **🖼️ Farcaster Frame Ready:** Built on a template that includes all necessary configurations for Farcaster Frame compatibility.
+
+## How It Works
+
+1.  **Connect Wallet:** The user must first connect their wallet to the Base network.
+2.  **Run Prediction:** The user clicks the "Run Prediction" button.
+3.  **Receive Signal:** The app calls the prediction API.
+    -   If the API returns a `positive` prediction, the UI displays a "BUY Opportunity" message, and the swap component is enabled.
+    -   If the API returns a `negative` prediction, the UI displays a "WAIT Period" message, and the swap component is disabled.
+4.  **Swap (Optional):** If the signal was positive, the user can proceed to swap their `USDC` for other tokens directly within the app.
 
 ## Getting Started
 
-1. Install dependencies:
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
+1.  **Install dependencies:**
+    ```bash
+    pnpm install
+    ```
 
-2. Verify environment variables, these will be set up by the `npx create-onchain --mini` command:
+2.  **Environment Variables:**
+    Create a `.env.local` file. The `create-onchain --mini` command sets up most of these. You will need to add the URL for the prediction API. By default, it points to the local mock API.
 
-You can regenerate the FARCASTER Account Association environment variables by running `npx create-onchain --manifest` in your project directory.
+    ```bash
+    # The URL for the prediction API endpoint
+    # Point this to your live prediction server or use the local mock API.
+    NEXT_PUBLIC_API_URL=/api/prediction
 
-The environment variables enable the following features:
+    # Shared/OnchainKit variables
+    NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME=
+    NEXT_PUBLIC_URL=
+    NEXT_PUBLIC_ICON_URL=
+    NEXT_PUBLIC_ONCHAINKIT_API_KEY=
 
-- Frame metadata - Sets up the Frame Embed that will be shown when you cast your frame
-- Account association - Allows users to add your frame to their account, enables notifications
-- Redis API keys - Enable Webhooks and background notifications for your application by storing users notification details
+    # Frame metadata
+    FARCASTER_HEADER=
+    FARCASTER_PAYLOAD=
+    FARCASTER_SIGNATURE=
+    NEXT_PUBLIC_APP_ICON=
+    NEXT_PUBLIC_APP_SUBTITLE=
+    NEXT_PUBLIC_APP_DESCRIPTION=
+    NEXT_PUBLIC_APP_SPLASH_IMAGE=
+    NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR=
+    NEXT_PUBLIC_APP_PRIMARY_CATEGORY=
+    NEXT_PUBLIC_APP_HERO_IMAGE=
+    NEXT_PUBLIC_APP_TAGLINE=
+    NEXT_PUBLIC_APP_OG_TITLE=
+    NEXT_PUBLIC_APP_OG_DESCRIPTION=
+    NEXT_PUBLIC_APP_OG_IMAGE=
 
-```bash
-# Shared/OnchainKit variables
-NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME=
-NEXT_PUBLIC_URL=
-NEXT_PUBLIC_ICON_URL=
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=
+    # Redis config
+    REDIS_URL=
+    REDIS_TOKEN=
+    ```
 
-# Frame metadata
-FARCASTER_HEADER=
-FARCASTER_PAYLOAD=
-FARCASTER_SIGNATURE=
-NEXT_PUBLIC_APP_ICON=
-NEXT_PUBLIC_APP_SUBTITLE=
-NEXT_PUBLIC_APP_DESCRIPTION=
-NEXT_PUBLIC_APP_SPLASH_IMAGE=
-NEXT_PUBLIC_SPLASH_BACKGROUND_COLOR=
-NEXT_PUBLIC_APP_PRIMARY_CATEGORY=
-NEXT_PUBLIC_APP_HERO_IMAGE=
-NEXT_PUBLIC_APP_TAGLINE=
-NEXT_PUBLIC_APP_OG_TITLE=
-NEXT_PUBLIC_APP_OG_DESCRIPTION=
-NEXT_PUBLIC_APP_OG_IMAGE=
+3.  **Start the development server:**
+    ```bash
+    pnpm dev
+    ```
 
-# Redis config
-REDIS_URL=
-REDIS_TOKEN=
-```
+## Key Files for Customization
 
-3. Start the development server:
-```bash
-npm run dev
-```
-
-## Template Features
-
-### Frame Configuration
-- `.well-known/farcaster.json` endpoint configured for Frame metadata and account association
-- Frame metadata automatically added to page headers in `layout.tsx`
-
-### Background Notifications
-- Redis-backed notification system using Upstash
-- Ready-to-use notification endpoints in `api/notify` and `api/webhook`
-- Notification client utilities in `lib/notification-client.ts`
-
-### Theming
-- Custom theme defined in `theme.css` with OnchainKit variables
-- Pixel font integration with Pixelify Sans
-- Dark/light mode support through OnchainKit
-
-### MiniKit Provider
-The app is wrapped with `MiniKitProvider` in `providers.tsx`, configured with:
-- OnchainKit integration
-- Access to Frames context
-- Sets up Wagmi Connectors
-- Sets up Frame SDK listeners
-- Applies Safe Area Insets
-
-## Customization
-
-To get started building your own frame, follow these steps:
-
-1. Customize the starter components:
-   - Modify `components/Components.tsx` to build your own UI
-   - Remove demo-related imports from `page.tsx`
-
-2. Start building your Frame:
-   - Modify `page.tsx` to create your Frame UI
-   - Update theme variables in `theme.css`
-   - Adjust MiniKit configuration in `providers.tsx`
-
-3. Add your frame to your account:
-   - Cast your frame to see it in action
-   - Share your frame with others to start building your community
+-   **Frontend Logic:** `app/components/Components.tsx` contains the main React component, state management, and UI for the prediction and swap functionality.
+-   **Mock API:** `app/api/prediction/route.ts` is the mock server endpoint that simulates the ML model's response. You can modify this to test different scenarios or connect to a real backend.
+-   **Type Definitions:** `lib/types.ts` defines the TypeScript interface for the API response.
+-   **Styling:** `app/globals.css` and `app/theme.css` control the application's appearance.
 
 ## Learn More
 
-- [MiniKit Documentation](https://docs.base.org/builderkits/minikit/overview)
-- [OnchainKit Documentation](https://docs.base.org/builderkits/onchainkit/getting-started)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+-   [MiniKit Documentation](https://docs.base.org/builderkits/minikit/overview)
+-   [OnchainKit Documentation](https://docs.base.org/builderkits/onchainkit/getting-started)
+-   [Next.js Documentation](https://nextjs.org/docs)
+-   [Tailwind CSS Documentation](https://tailwindcss.com/docs)
