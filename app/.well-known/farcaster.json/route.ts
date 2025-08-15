@@ -32,7 +32,7 @@ export async function GET() {
       homeUrl: URL,
       webhookUrl: `${URL}/api/webhook`,
       primaryCategory: process.env.NEXT_PUBLIC_APP_PRIMARY_CATEGORY || "finance",
-      tags: [],
+      tags: ["crypto", "base", "ml", "prediction", "trading"],
       heroImageUrl: `${URL}/hero.png`,
       tagline: process.env.NEXT_PUBLIC_APP_TAGLINE || "ml-driven smart swapping",
       ogTitle: process.env.NEXT_PUBLIC_APP_OG_TITLE || "smart-swap - ml-driven smart swapping",
