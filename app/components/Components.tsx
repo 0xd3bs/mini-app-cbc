@@ -163,6 +163,7 @@ export function Home() {
    * It calls the prediction API and updates the component's state.
    */
   const handleRunPrediction = async () => {
+    setSwapKey(prevKey => prevKey + 1); // Reset the Swap component on each new prediction
     setIsLoading(true);
     setPredictionData(null);
     setError(null);
@@ -192,9 +193,14 @@ export function Home() {
       const data: PredictionResponse = await response.json();
       setPredictionData(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(errorMessage);
-      console.error(errorMessage);
+      let friendlyErrorMessage = 'An unknown error occurred.';
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        friendlyErrorMessage = 'Could not connect to the prediction service. Please check your internet connection and try again.';
+      } else if (err instanceof Error) {
+        friendlyErrorMessage = err.message;
+      }
+      setError(friendlyErrorMessage);
+      console.error(err); // Log the original error for debugging
     } finally {
       setIsLoading(false);
     }
@@ -224,9 +230,9 @@ export function Home() {
         </p>
       </div>
 
-      <Card title="Buy, Sell or WAIT?">
+      <Card title="Buy or Sell">
         <p className="text-[var(--app-foreground-muted)] mb-4">
-          🧠 ML model analyzes the market and tells you: buy more, sell or just wait!
+          🧠 ML model analyzes the market and tells you: buy more or just sell!
         </p>
         {!isConnected && (
           <p className="text-[var(--app-foreground-muted)] text-center text-xs" style={{ marginTop: 'var(--space-feedback-top)', marginBottom: 'var(--space-help-bottom)' }}>
@@ -247,10 +253,9 @@ export function Home() {
             <p className="text-red-500">Error: {error}</p>
           ) : predictionData ? (
             <div>
-              <p className={`font-bold leading-tight ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-yellow-500'}`}>
+              <p className={`font-bold leading-tight ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
                 Prediction: {
-                  predictionData.prediction === 'positive' ? 'BUY Opportunity' :
-                  predictionData.prediction === 'negative' ? 'SELL Opportunity' : 'WAIT Period'
+                  predictionData.prediction === 'positive' ? 'BUY Opportunity' : 'SELL Opportunity'
                 }
               </p>
               {predictionData.prediction === 'positive' && (

@@ -1,13 +1,13 @@
-# Buy, Sell or WAIT? - A Base Mini App
+# Buy or Sell? - A Base Mini App
 
-This project is a "Mini App" for the Base blockchain that provides users with a simple, ML-driven recommendation: whether it's a good time to **buy**, **sell**, or if they should **wait**. It's built with the [MiniKit](https://docs.base.org/builderkits/minikit/overview) template for [Next.js](https://nextjs.org) and integrates [OnchainKit](https://www.base.org/builders/onchainkit) for wallet interactions and swaps.
+This project is a "Mini App" for the Base blockchain that provides users with a simple, ML-driven recommendation: whether it's a good time to **buy**, **sell**. It's built with the [MiniKit](https://docs.base.org/builderkits/minikit/overview) template for [Next.js](https://nextjs.org) and integrates [OnchainKit](https://www.base.org/builders/onchainkit) for wallet interactions and swaps.
 
 The application's core feature is a prediction engine that analyzes market conditions (currently simulated) and advises the user on their next move.
 
 ## Core Features
 
--   **🧠 ML-Powered Predictions:** A backend endpoint simulates a machine learning model to provide a "BUY", "SELL", or "WAIT" signal.
--   **🔄 Integrated Crypto Swaps:** Utilizes the OnchainKit `<Swap />` component to allow users to instantly buy crypto (`ETH` or `WBTC`) with `USDC` when a "BUY" opportunity is identified, or sell crypto for `USDC` when a "SELL" signal is given.
+-   **🧠 ML-Powered Predictions:** A backend endpoint simulates a machine learning model to provide a "BUY" or "SELL" signal.
+-   **🔄 Integrated Crypto Swaps:** Utilizes the OnchainKit `<Swap />` component to allow users to instantly buy crypto (`ETH`) with `USDC` when a "BUY" opportunity is identified, or sell crypto for `USDC` when a "SELL" signal is given.
 -   **💡 Dynamic UI:** The user interface responds to the prediction, enabling or disabling the swap functionality and adjusting the labels accordingly.
 -   **🔗 Wallet Connectivity:** Uses Wagmi and OnchainKit to seamlessly connect to the user's wallet.
 -   **🖼️ Farcaster Frame Ready:** Built on a template that includes all necessary configurations for Farcaster Frame compatibility.
@@ -19,7 +19,6 @@ The application's core feature is a prediction engine that analyzes market condi
 3.  **Receive Signal:** The app calls the prediction API.
     -   If the API returns a `positive` prediction, the UI displays a "BUY Opportunity" message, and the swap component is enabled for buying.
     -   If the API returns a `negative` prediction, the UI displays a "SELL Opportunity" message, the swap component is enabled for selling (ETH to USDC).
-    -   If the API returns a neutral prediction, the UI displays a "WAIT Period" message, and the swap component is disabled.
 4.  **Swap (Optional):** If the signal was positive or negative, the user can proceed to swap their tokens directly within the app.
 
 ## Getting Started
