@@ -163,9 +163,7 @@ export function Home() {
    * It calls the prediction API and updates the component's state.
    */
   const handleRunPrediction = async () => {
-    setSwapKey(prevKey => prevKey + 1); // Reset the Swap component on each new prediction
     setIsLoading(true);
-    setPredictionData(null);
     setError(null);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -191,6 +189,12 @@ export function Home() {
       }
 
       const data: PredictionResponse = await response.json();
+
+      // Conditionally reset the Swap component only if the prediction type changes
+      if (predictionData && data.prediction !== predictionData.prediction) {
+        setSwapKey(prevKey => prevKey + 1);
+      }
+
       setPredictionData(data);
     } catch (err) {
       let friendlyErrorMessage = 'An unknown error occurred.';
