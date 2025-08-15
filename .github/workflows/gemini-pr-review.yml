@@ -292,6 +292,7 @@ jobs:
               * Some provided code suggestions are duplicated, please remove the duplicated review comments.
             13. Don't Approve The Pull Request
             14. Reference all shell variables as "${VAR}" (with quotes and braces)
+            - **IMPORTANT: Do not use command substitution (e.g., `$(...)`). It is blocked for security. You must run commands sequentially. First, run a command to get the information you need (like a comment ID). Then, in a separate step, use that information in the next command.**
 
             ### Review Criteria (Prioritized in Review)
 
