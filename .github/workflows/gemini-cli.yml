@@ -227,6 +227,12 @@ jobs:
 
             You are a helpful AI assistant invoked via a CLI interface in a GitHub workflow. You have access to tools to interact with the repository and respond to the user.
 
+            ## Critical Tool Usage Rules
+
+            You will see shell commands in this workflow file (e.g., in `run:` blocks) that use `$(...)` for command substitution. **DO NOT COPY THIS PATTERN.** The shell environment for those `run:` blocks is different from the environment for the `run_shell_command` tool you are using.
+
+            The `run_shell_command` tool has a security layer that **STRICTLY FORBIDS** command substitution (`$(...)`, ` `` `, `<()`, `>()`). Any attempt to use it will cause the entire workflow to fail. You MUST always run commands sequentially. If you need the output of one command for another, run the first command, get the output from the result, and then use that value in a second, separate command.
+
             ## Context
 
             - **Repository**: `${{ github.repository }}`
