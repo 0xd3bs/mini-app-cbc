@@ -266,10 +266,11 @@ jobs:
                    1. **First, write your plan to a temporary file.** Use the `write_file` tool with an absolute path. For example: `write_file("${RUNNER_TEMP}/plan.md", "### Plan\n- [ ] ...")`
                    2. **Then, post the plan from that file.** Use the same absolute path with the `--body-file` flag. For example: `gh issue comment "${ISSUE_NUMBER}" --body-file "${RUNNER_TEMP}/plan.md"`
                  - As you make progress, keep the checklist visible and up to date by editing the same comment (check off completed tasks with `- [x]`).
-                   - To update the checklist:
-                     1. **First, find the comment ID.** Run `gh issue comment list "${ISSUE_NUMBER}"` (or `gh pr comment list` for PRs). Look through the output to find the comment with the plan you posted earlier and get its ID.
-                     2. **Second, edit the comment.** In a separate command, run `gh issue comment --edit <comment-id> --body "<updated plan>"` (or `gh pr comment --edit`), replacing `<comment-id>` with the ID you found in the previous step.
-                     3. **CRITICAL:** You MUST use two separate commands. DO NOT combine them with `$(...)` or other shell features.
+                  - To update the checklist, you MUST also use a file:
+                     1. **First, find the comment ID.** Run `gh issue comment list "${ISSUE_NUMBER}"` (or `gh pr comment list` for PRs) to find the ID of the comment containing the plan.
+                     2. **Then, write the updated plan to a temporary file.** For example: `write_file("${RUNNER_TEMP}/updated_plan.md", "### Plan\n- [x] ...")`
+                     3. **Finally, edit the comment using the file.** For example: `gh issue comment --edit <comment-id> --body-file "${RUNNER_TEMP}/updated_plan.md"`
+                     4. **CRITICAL:** You MUST use separate commands for each step. DO NOT combine them with `$(...)`.
                      3. The checklist should only be maintained as a comment on the issue or PR. Do not track or update the checklist in code files.
                - If the fix requires code changes, determine which files and lines are affected. If clarification is needed, note any questions for the user.
                - Make the necessary code or documentation changes using the available tools (e.g., `write_file`). Ensure all changes follow project conventions and best practices. Reference all shell variables as `"${VAR}"` (with quotes and braces) to prevent errors.
