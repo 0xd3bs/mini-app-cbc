@@ -186,8 +186,8 @@ export function Home() {
       });
 
       if (!response.ok) {
-        // Handle internal server errors or other non-ok responses
-        throw new Error('An internal error occurred. Please try again later.');
+        const errorText = await response.text();
+        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       const data: PredictionResponse = await response.json();
@@ -207,13 +207,13 @@ export function Home() {
   };
 
   const isSwapDisabled = !isConnected || !predictionData || !['positive', 'negative'].includes(predictionData.prediction);
-  const tokenToBuy = predictionData?.tokenToBuy && TOKEN_MAP[predictionData.tokenToBuy] 
-                  ? TOKEN_MAP[predictionData.tokenToBuy] 
+  const targetToken = predictionData?.tokenToBuy && TOKEN_MAP[predictionData.tokenToBuy]
+                  ? TOKEN_MAP[predictionData.tokenToBuy]
                   : ETH_TOKEN; // Default to ETH if no prediction
 
-  const fromToken = predictionData?.prediction === 'negative' ? tokenToBuy : USDC_TOKEN;
-  const toToken = predictionData?.prediction === 'negative' ? USDC_TOKEN : tokenToBuy;
-  const isSell = predictionData?.prediction === 'negative';
+  const fromToken = predictionData?.prediction === 'negative' ? targetToken : USDC_TOKEN;
+  const toToken = predictionData?.prediction === 'negative' ? USDC_TOKEN : targetToken;
+  const isSellAction = predictionData?.prediction === 'negative';
 
   const getOverlayMessage = () => {
     if (!isConnected) {
@@ -282,16 +282,16 @@ export function Home() {
             <div className="swap-container">
               <div className="relative">
                 <SwapAmountInput
-                  label={isSell ? "Sell" : "Buy"}
+                  label={isSellAction ? "Sell" : "Buy"}
                   token={fromToken}
                   type="from"
                 />
               </div>
               <div className="relative">
                 <SwapAmountInput
-                  label={isSell ? "Receive" : "Receive"}
+                  label={isSellAction ? "Receive" : "Receive"}
                   token={toToken}
-                  type="to"                
+                  type="to"
                 />
               </div>
               <SwapButton />
