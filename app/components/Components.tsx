@@ -163,6 +163,7 @@ export function Home() {
    * It calls the prediction API and updates the component's state.
    */
   const handleRunPrediction = async () => {
+    setSwapKey(prevKey => prevKey + 1); // Reset the Swap component on each new prediction
     setIsLoading(true);
     setPredictionData(null);
     setError(null);
@@ -185,31 +186,40 @@ export function Home() {
       });
 
       if (!response.ok) {
-        // Handle internal server errors or other non-ok responses
-        throw new Error('An internal error occurred. Please try again later.');
+        const errorText = await response.text();
+        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       const data: PredictionResponse = await response.json();
       setPredictionData(data);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(errorMessage);
-      console.error(errorMessage);
+      let friendlyErrorMessage = 'An unknown error occurred.';
+      if (err instanceof TypeError && err.message === 'Failed to fetch') {
+        friendlyErrorMessage = 'Could not connect to the prediction service. Please check your internet connection and try again.';
+      } else if (err instanceof Error) {
+        friendlyErrorMessage = err.message;
+      }
+      setError(friendlyErrorMessage);
+      console.error(err); // Log the original error for debugging
     } finally {
       setIsLoading(false);
     }
   };
 
-  const isBuyDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
-  const tokenToBuy = predictionData?.prediction === 'positive' && predictionData.tokenToBuy && TOKEN_MAP[predictionData.tokenToBuy]
-                  ? TOKEN_MAP[predictionData.tokenToBuy] 
+  const isSwapDisabled = !isConnected || !predictionData || !['positive', 'negative'].includes(predictionData.prediction);
+  const targetToken = predictionData?.tokenToBuy && TOKEN_MAP[predictionData.tokenToBuy]
+                  ? TOKEN_MAP[predictionData.tokenToBuy]
                   : ETH_TOKEN; // Default to ETH if no prediction
+
+  const fromToken = predictionData?.prediction === 'negative' ? targetToken : USDC_TOKEN;
+  const toToken = predictionData?.prediction === 'negative' ? USDC_TOKEN : targetToken;
+  const isSellAction = predictionData?.prediction === 'negative';
 
   const getOverlayMessage = () => {
     if (!isConnected) {
       return "Connect your wallet to begin.";
     }
-    return "Run a positive prediction to enable buy.";
+    return "Run a prediction to enable swap.";
   };
 
   return (
@@ -220,13 +230,13 @@ export function Home() {
         </p>
       </div>
 
-      <Card title="Buy or WAIT?">
+      <Card title="Buy or Sell">
         <p className="text-[var(--app-foreground-muted)] mb-4">
-          🧠 ML model analyzes the market and tells you: buy more or just wait!
+          🧠 ML model analyzes the market and tells you: buy more or just sell!
         </p>
         {!isConnected && (
           <p className="text-[var(--app-foreground-muted)] text-center text-xs" style={{ marginTop: 'var(--space-feedback-top)', marginBottom: 'var(--space-help-bottom)' }}>
-            Click the button to get a recommendation for your next buy.
+            Click the button to get a recommendation for your next action.
           </p>
         )}        
 
@@ -243,8 +253,10 @@ export function Home() {
             <p className="text-red-500">Error: {error}</p>
           ) : predictionData ? (
             <div>
-              <p className={`font-bold leading-tight ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-yellow-500'}`}>
-                Prediction: {predictionData.prediction === 'positive' ? 'BUY Opportunity' : 'WAIT Period'}
+              <p className={`font-bold leading-tight ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
+                Prediction: {
+                  predictionData.prediction === 'positive' ? 'BUY Opportunity' : 'SELL Opportunity'
+                }
               </p>
               {predictionData.prediction === 'positive' && (
                 <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
@@ -253,7 +265,7 @@ export function Home() {
               )}              
               {predictionData.prediction === 'negative' && (
                 <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
-                  Market signals suggest waiting.
+                  Market signals suggest selling.
                 </p>
               )}
             </div>
@@ -261,25 +273,25 @@ export function Home() {
         </div>
 
           <div className="w-full text-center" style={{ height: 'var(--pointer-height)' }}>
-            {!isBuyDisabled && (
+            {!isSwapDisabled && (
               <span style={{ fontSize: 'var(--pointer-font-size)' }}>👇</span>
             )}
           </div>
-          <fieldset disabled={isBuyDisabled} className="relative" style={{ marginTop: 'var(--space-swap-top)' }}>
+          <fieldset disabled={isSwapDisabled} className="relative" style={{ marginTop: 'var(--space-swap-top)' }}>
             <Swap key={swapKey}>
             <div className="swap-container">
               <div className="relative">
                 <SwapAmountInput
-                  label="Sell"
-                  token={USDC_TOKEN}
+                  label={isSellAction ? "Sell" : "Buy"}
+                  token={fromToken}
                   type="from"
                 />
               </div>
               <div className="relative">
                 <SwapAmountInput
-                  label="Buy"
-                  token={tokenToBuy}
-                  type="to"                
+                  label={isSellAction ? "Receive" : "Receive"}
+                  token={toToken}
+                  type="to"
                 />
               </div>
               <SwapButton />
@@ -287,12 +299,12 @@ export function Home() {
               <SwapToast />
             </div>
           </Swap>
-          {isBuyDisabled && (
+          {isSwapDisabled && (
             <div className="absolute inset-0 cursor-not-allowed rounded-xl bg-[var(--app-card-bg)] bg-opacity-50" />
           )}
           </fieldset>
         <div style={{ height: 'var(--overlay-helper-height)', marginTop: 'var(--space-overlay-top)' }}>
-          {isBuyDisabled ? (
+          {isSwapDisabled ? (
             <p className="text-center text-xs text-[var(--app-foreground-muted)]">
               {getOverlayMessage()}
             </p>
