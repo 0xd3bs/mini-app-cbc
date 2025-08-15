@@ -236,7 +236,10 @@ export function Home() {
 
       <Card title="Buy or Sell">
         <p className="text-[var(--app-foreground-muted)] mb-4">
-          🧠 ML model analyzes the market and tells you: buy more or just sell!
+          🧠 ML model analyzes the market and tells you whether to buy or sell!
+        </p>
+        <p className="text-xs italic text-[var(--app-foreground-muted)] text-center mb-4">
+          💡 For best results, check predictions at market close or at the same time each day.
         </p>
         {!isConnected && (
           <p className="text-[var(--app-foreground-muted)] text-center text-xs" style={{ marginTop: 'var(--space-feedback-top)', marginBottom: 'var(--space-help-bottom)' }}>
