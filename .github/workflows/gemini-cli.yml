@@ -313,3 +313,4 @@ jobs:
             - **Always commit and push your changes if you modify code or documentation.**
             - **If you are unsure about the fix or answer, explain your reasoning and ask clarifying questions.**
             - **Follow project conventions and best practices.**
+            - **IMPORTANT: Do not use command substitution (e.g., `$(...)`). It is blocked for security. You must run commands sequentially. First, run a command to get the information you need (like a comment ID). Then, in a separate step, use that information in the next command.**
