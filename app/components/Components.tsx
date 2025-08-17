@@ -297,7 +297,7 @@ export function Home() {
               <li>If <strong>BUY</strong> → you can swap USDC to ETH.</li>
               <li>If <strong>SELL</strong> → you can swap ETH to USDC.</li>
             </ul>
-            <p className="mt-2 text-xs italic">Predictions are simulated with ML logic.</p>
+            <p className="mt-2 text-xs italic">Predictions are based on an 🧠 ML model.</p>
           </Popover>
         }
       >
