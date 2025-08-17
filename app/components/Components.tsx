@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useState, useEffect } from "react";
+import { type ReactNode, useState, useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
 import {
   Swap,
@@ -46,6 +46,55 @@ const TOKEN_MAP: { [key: string]: Token } = {
   ETH: ETH_TOKEN,
   WBTC: WBTC_TOKEN,
 };
+
+// --- Popover Component ---
+type PopoverProps = {
+  trigger: ReactNode;
+  children: ReactNode;
+};
+
+function Popover({ trigger, children }: PopoverProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  const handleToggle = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    setIsOpen(!isOpen);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+      setIsOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="relative inline-block text-left" ref={popoverRef}>
+      <div onClick={handleToggle} className="cursor-pointer">
+        {trigger}
+      </div>
+      {isOpen && (
+        <div className="absolute right-0 z-10 w-64 mt-2 origin-top-right bg-[var(--app-gray)] border border-[var(--app-card-border)] rounded-md shadow-lg">
+          <div className="p-3 text-sm text-[var(--app-foreground-muted)]">
+            {children}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 type ButtonProps = {
   children: ReactNode;
@@ -103,6 +152,7 @@ export function Button({
 
 type CardProps = {
   title?: string;
+  titleExtra?: ReactNode;
   children: ReactNode;
   className?: string;
   onClick?: () => void;
@@ -110,6 +160,7 @@ type CardProps = {
 
 function Card({
   title,
+  titleExtra,
   children,
   className = "",
   onClick,
@@ -130,10 +181,11 @@ function Card({
       role={onClick ? "button" : undefined}
     >
       {title && (
-        <div className="px-5 py-3 border-b border-[var(--app-card-border)]">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-[var(--app-card-border)]">
           <h3 className="text-lg font-medium text-[var(--app-foreground)]">
             {title}
           </h3>
+          {titleExtra}
         </div>
       )}
       <div className="p-5">{children}</div>
@@ -234,7 +286,21 @@ export function Home() {
         </p>
       </div>
 
-      <Card title="Buy or Sell">
+      <Card 
+        title="Buy or Sell"
+        titleExtra={
+          <Popover
+            trigger={<Icon name="help-circle" size="sm" className="text-[var(--app-foreground-muted)]" />}
+          >
+            <p><strong>This mini app gives you a simple prediction: BUY or SELL.</strong></p>
+            <ul className="mt-2 space-y-1 list-disc list-inside text-xs">
+              <li>If <strong>BUY</strong> → you can swap USDC to ETH.</li>
+              <li>If <strong>SELL</strong> → you can swap ETH to USDC.</li>
+            </ul>
+            <p className="mt-2 text-xs italic">Predictions are simulated with ML logic.</p>
+          </Popover>
+        }
+      >
         <p className="text-[var(--app-foreground-muted)] mb-4">
           🧠 ML model analyzes the market and tells you whether to buy or sell!
         </p>
@@ -324,7 +390,7 @@ export function Home() {
 
 
 type IconProps = {
-  name: "heart" | "star" | "check" | "plus" | "arrow-right";
+  name: "heart" | "star" | "check" | "plus" | "arrow-right" | "help-circle";
   size?: "sm" | "md" | "lg";
   className?: string;
 }
@@ -412,6 +478,23 @@ export function Icon({ name, size = "md", className = "" }: IconProps) {
         <title>Arrow Right</title>
         <line x1="5" y1="12" x2="19" y2="12" />
         <polyline points="12 5 19 12 12 19" />
+      </svg>
+    ),
+    "help-circle": (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <title>Help</title>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
       </svg>
     ),
   };
