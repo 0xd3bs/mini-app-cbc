@@ -20,6 +20,9 @@ export async function GET() {
       payload: process.env.FARCASTER_PAYLOAD || "eyJkb21haW4iOiJtaW5pLWFwcC1jYmMudmVyY2VsLmFwcCJ9",
       signature: process.env.FARCASTER_SIGNATURE || "MHhiYmM5YjNlNGFlMTY2OGI5NzU0NTUzMTA5NzA1MWUyNzY1YmIxODE2MTE0ZmFjMWRkZTAxYzAzNDExNDQ0MzQyNDczZTE0MzNhMGQ5MDg4OTViY2Q3MmY5OTI3M2MxYThmMDgzNzMwYTc5ZmZkMTc4Zjk4NzJjZmJjMmNlMGVjYjFi",
     },
+    baseBuilder: {
+      allowedAddresses: ["0x9bA213D3d8C113804B0656D3eaA29e3774215d04"],
+    },
     frame: withValidProperties({
       version: "1",
       name: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || "smart-swap",
