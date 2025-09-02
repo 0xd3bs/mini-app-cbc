@@ -5,6 +5,7 @@ import {
   useAddFrame,
   useOpenUrl,
 } from "@coinbase/onchainkit/minikit";
+import { useRouter } from "next/navigation";
 import {
   Name,
   Identity,
@@ -22,10 +23,14 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "./components/Components";
 import { Icon } from "./components/Components";
 import { Home } from "./components/Components";
+import { Tabs } from "@/components/ui/Tabs";
+import { Dashboard } from "@/components/dashboard/Dashboard";
 
 export default function App() {
+  const router = useRouter();
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [frameAdded, setFrameAdded] = useState(false);
+  const [activeTab, setActiveTab] = useState<"trade" | "dashboard">("trade");
 
   const addFrame = useAddFrame();
   const openUrl = useOpenUrl();
@@ -90,11 +95,31 @@ export default function App() {
               </Wallet>
             </div>
           </div>
-          <div>{saveFrameButton}</div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[var(--app-accent)] p-4"
+              icon={<Icon name="arrow-right" size="sm" />}
+              onClick={() => router.push("/dashboard")}
+            >
+              Dashboard
+            </Button>
+            {saveFrameButton}
+          </div>
         </header>
 
         <main className="flex-1">
-          <Home />
+          <Tabs
+            items={[
+              { key: "trade", label: "Trade" },
+              { key: "dashboard", label: "Dashboard" },
+            ]}
+            activeKey={activeTab}
+            onChange={(key) => setActiveTab(key as "trade" | "dashboard")}
+          />
+          {activeTab === "trade" && <Home />}
+          {activeTab === "dashboard" && <Dashboard />}
         </main>
 
         <footer className="mt-2 pt-4 flex justify-center">
