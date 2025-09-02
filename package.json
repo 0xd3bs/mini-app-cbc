@@ -18,7 +18,9 @@
     "react-dom": "^18",
     "@tanstack/react-query": "^5",
     "viem": "^2.27.2",
-    "wagmi": "^2.16.0"
+    "wagmi": "^2.16.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.5"
   },
   "devDependencies": {
     "@types/node": "^22",

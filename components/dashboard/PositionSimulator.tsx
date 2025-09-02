@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/Button"
-import { Icon } from "@/components/ui/Icon"
 import type { Position } from "@/lib/positions"
 import { getEthPriceWithFallback, type PriceWithTimestamp } from "@/lib/coingecko-api"
 
@@ -142,10 +141,6 @@ export function PositionSimulator() {
             Simulate potential variations for open positions without closing them
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={loadOpenPositions}>
-          <Icon name="refresh" size="sm" className="mr-1" />
-          Refresh
-        </Button>
       </div>
 
       <div className="space-y-4">
