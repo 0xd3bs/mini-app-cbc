@@ -5,7 +5,7 @@ import {
   useAddFrame,
   useOpenUrl,
 } from "@coinbase/onchainkit/minikit";
-import { useRouter } from "next/navigation";
+
 import {
   Name,
   Identity,
@@ -27,7 +27,6 @@ import { Tabs } from "@/components/ui/Tabs";
 import { Dashboard } from "@/components/dashboard/Dashboard";
 
 export default function App() {
-  const router = useRouter();
   const { setFrameReady, isFrameReady, context } = useMiniKit();
   const [frameAdded, setFrameAdded] = useState(false);
   const [activeTab, setActiveTab] = useState<"trade" | "dashboard">("trade");

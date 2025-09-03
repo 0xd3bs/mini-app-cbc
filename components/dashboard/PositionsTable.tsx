@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-import { Icon } from "@/components/ui/Icon"
+
 import type { Position } from "@/lib/positions"
 import { formatDate } from "@/lib/utils"
 

@@ -23,7 +23,7 @@ export function PositionSimulator() {
     const now = new Date()
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
   })
-  const [manualPrice, setManualPrice] = useState("")
+  const [manualPrice] = useState("")
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
