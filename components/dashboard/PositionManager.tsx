@@ -13,7 +13,7 @@ export function PositionManager() {
   return (
     <Card title="Position Management">
       <p className="text-sm text-[var(--app-foreground-muted)] mb-4">
-        Open new positions, close existing ones, or simulate variations
+        Open new BUY positions, close existing ones, or simulate variations
       </p>
       <Tabs
         items={[

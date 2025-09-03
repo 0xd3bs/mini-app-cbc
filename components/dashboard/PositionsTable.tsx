@@ -9,10 +9,6 @@ import { formatDuration } from "@/lib/utils"
 export function PositionsTable() {
   const { positions, isLoading, error, refreshPositions } = usePositions()
 
-  const getPositionColor = (side: string) => {
-    return side === "BUY" ? "text-green-500" : "text-red-500"
-  }
-
   const getStatusBadge = (status: string) => {
     return status === "OPEN" ? (
       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -74,6 +70,23 @@ export function PositionsTable() {
     }
   }
 
+  const formatTimeOnly = (dateString: string): string => {
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) {
+        return "Invalid Time"
+      }
+      
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      })
+    } catch {
+      return "Invalid Time"
+    }
+  }
+
   // 🎯 NEW: Combined Performance function
   const getPerformanceSummary = (position: Position) => {
     const duration = calculateDuration(position)
@@ -98,12 +111,7 @@ export function PositionsTable() {
     )
   }
 
-  // 🎯 NEW: Tooltip content for dates
-  const getDateTooltip = (position: Position) => {
-    const opened = formatDateOnly(position.openedAt)
-    const closed = position.closedAt ? formatDateOnly(position.closedAt) : "Still open"
-    return `Opened: ${opened}\nClosed: ${closed}`
-  }
+
 
   if (isLoading) {
     return (
@@ -138,18 +146,21 @@ export function PositionsTable() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          {/* 🎯 OPTIMIZED: Reduced min-width for mobile */}
-          <table className="w-full min-w-[350px]">
+          {/* 🎯 OPTIMIZED: Mobile-first table with Open/Closed columns */}
+          <table className="w-full min-w-[400px]">
             <thead>
               <tr className="border-b border-[var(--app-card-border)]">
-                <th className="text-left py-2 px-2 text-xs font-medium text-[var(--app-foreground-muted)]">
-                  Type
+                <th className="text-left py-2 px-1 text-xs font-medium text-[var(--app-foreground-muted)]">
+                  Open
                 </th>
-                <th className="text-left py-2 px-2 text-xs font-medium text-[var(--app-foreground-muted)]">
+                <th className="text-left py-2 px-1 text-xs font-medium text-[var(--app-foreground-muted)]">
+                  Close
+                </th>
+                <th className="text-left py-2 px-1 text-xs font-medium text-[var(--app-foreground-muted)]">
                   Status
                 </th>
                 {/* 🎯 NEW: Combined Performance column */}
-                <th className="text-left py-2 px-2 text-xs font-medium text-[var(--app-foreground-muted)]">
+                <th className="text-left py-2 px-1 text-xs font-medium text-[var(--app-foreground-muted)]">
                   Performance
                 </th>
               </tr>
@@ -157,20 +168,40 @@ export function PositionsTable() {
             <tbody>
               {positions.map((position) => (
                 <tr key={position.id} className="border-b border-[var(--app-card-border)] hover:bg-[var(--app-gray)]">
-                  {/* 🎯 Type with tooltip for dates */}
-                  <td 
-                    className="py-2 px-2 cursor-help" 
-                    title={getDateTooltip(position)}
-                  >
-                    <span className={`font-medium text-xs ${getPositionColor(position.side)}`}>
-                      {position.side}
-                    </span>
+                  {/* 🎯 Open Date & Time */}
+                  <td className="py-2 px-1">
+                    <div className="text-xs">
+                      <div className="font-medium text-[var(--app-foreground)]">
+                        {formatDateOnly(position.openedAt)}
+                      </div>
+                      <div className="text-[var(--app-foreground-muted)]">
+                        {formatTimeOnly(position.openedAt)}
+                      </div>
+                    </div>
                   </td>
-                  <td className="py-2 px-2">
+                  
+                  {/* 🎯 Close Date & Time */}
+                  <td className="py-2 px-1">
+                    {position.closedAt ? (
+                      <div className="text-xs">
+                        <div className="font-medium text-[var(--app-foreground)]">
+                          {formatDateOnly(position.closedAt)}
+                        </div>
+                        <div className="text-[var(--app-foreground-muted)]">
+                          {formatTimeOnly(position.closedAt)}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-[var(--app-foreground-muted)]">-</span>
+                    )}
+                  </td>
+                  
+                  <td className="py-2 px-1">
                     {getStatusBadge(position.status)}
                   </td>
+                  
                   {/* 🎯 NEW: Combined Performance column */}
-                  <td className="py-2 px-2">
+                  <td className="py-2 px-1">
                     {getPerformanceSummary(position)}
                   </td>
                 </tr>

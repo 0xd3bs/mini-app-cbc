@@ -64,12 +64,8 @@ export function PositionSimulator() {
 
       // Calculate simulation results
       const variationPercent = ((priceData.price - selectedPosition.priceUsd) / selectedPosition.priceUsd) * 100
-      let profitLoss: number
-      if (selectedPosition.side === "BUY") {
-        profitLoss = priceData.price - selectedPosition.priceUsd
-      } else {
-        profitLoss = selectedPosition.priceUsd - priceData.price
-      }
+      // Only BUY positions supported - calculate profit/loss accordingly
+      const profitLoss = priceData.price - selectedPosition.priceUsd
       
       const durationHours =
         (new Date(simulationDatetime).getTime() - new Date(selectedPosition.openedAt).getTime()) / (1000 * 60 * 60)

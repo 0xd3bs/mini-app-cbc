@@ -149,7 +149,7 @@ export function Home() {
 
       const data: PredictionResponse = await response.json();
 
-      // Conditionally reset the Swap component only if the prediction type changes
+      // Reset the Swap component when prediction changes
       if (predictionData && data.prediction !== predictionData.prediction) {
         setSwapKey(prevKey => prevKey + 1);
       }
@@ -169,18 +169,21 @@ export function Home() {
     }
   };
 
-  const isSwapDisabled = !isConnected || !predictionData || !['positive', 'negative'].includes(predictionData.prediction);
+  const isSwapDisabled = !isConnected || !predictionData || predictionData.prediction !== 'positive';
   const targetToken = predictionData?.tokenToBuy && TOKEN_MAP[predictionData.tokenToBuy]
                   ? TOKEN_MAP[predictionData.tokenToBuy]
                   : ETH_TOKEN; // Default to ETH if no prediction
 
-  const fromToken = predictionData?.prediction === 'negative' ? targetToken : USDC_TOKEN;
-  const toToken = predictionData?.prediction === 'negative' ? USDC_TOKEN : targetToken;
-  const isSellAction = predictionData?.prediction === 'negative';
+  // Only BUY functionality - USDC to ETH
+  const fromToken = USDC_TOKEN;
+  const toToken = targetToken;
 
   const getOverlayMessage = () => {
     if (!isConnected) {
       return "Connect your wallet to begin.";
+    }
+    if (predictionData && predictionData.prediction === 'negative') {
+      return "Wait for better buying conditions.";
     }
     return "Run a prediction to enable swap.";
   };
@@ -194,22 +197,21 @@ export function Home() {
       </div>
 
       <Card 
-        title="Buy or Sell"
+        title="Buy"
         titleExtra={
           <Popover
             trigger={<Icon name="help-circle" size="sm" className="text-[var(--app-foreground-muted)]" />}
           >
-            <p><strong>This mini app gives you a simple prediction: BUY or SELL.</strong></p>
+            <p><strong>This mini app gives you a simple prediction: BUY.</strong></p>
             <ul className="mt-2 space-y-1 list-disc list-inside text-xs">
-              <li>If <strong>BUY</strong> → you can swap USDC to ETH.</li>
-              <li>If <strong>SELL</strong> → you can swap ETH to USDC.</li>
+              <li>When <strong>BUY</strong> → you can swap USDC to ETH.</li>
             </ul>
             <p className="mt-2 text-xs italic">Predictions are based on an 🧠 ML model.</p>
           </Popover>
         }
       >
         <p className="text-[var(--app-foreground-muted)] mb-4">
-          🧠 ML model analyzes the market and tells you whether to buy or sell!
+          🧠 ML model analyzes the market and tells you when to buy!
         </p>
         <p className="text-xs italic text-[var(--app-foreground-muted)] text-center mb-4">
           💡 For best results, check predictions at market close or at the same time each day.
@@ -233,20 +235,24 @@ export function Home() {
             <p className="text-red-500">Error: {error}</p>
           ) : predictionData ? (
             <div>
-              <p className={`font-bold leading-tight ${predictionData.prediction === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
-                Prediction: {
-                  predictionData.prediction === 'positive' ? 'BUY Opportunity' : 'SELL Opportunity'
-                }
-              </p>
-              {predictionData.prediction === 'positive' && (
-                <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
-                  Good time to enter the market.
-                </p>
-              )}              
-              {predictionData.prediction === 'negative' && (
-                <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
-                  Market signals suggest selling.
-                </p>
+              {predictionData.prediction === 'positive' ? (
+                <>
+                  <p className="font-bold leading-tight text-green-500">
+                    Prediction: BUY Opportunity
+                  </p>
+                  <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
+                    Good time to enter the market.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold leading-tight text-amber-500">
+                    Prediction: Wait for Better Conditions
+                  </p>
+                  <p className="text-sm leading-tight text-[var(--app-foreground-muted)]">
+                    Market signals suggest waiting before buying.
+                  </p>
+                </>
               )}
             </div>
           ) : null}
@@ -256,20 +262,23 @@ export function Home() {
             {!isSwapDisabled && (
               <span style={{ fontSize: 'var(--pointer-font-size)' }}>👇</span>
             )}
+            {predictionData && predictionData.prediction === 'negative' && (
+              <span style={{ fontSize: 'var(--pointer-font-size)' }}>⏳</span>
+            )}
           </div>
           <fieldset disabled={isSwapDisabled} className="relative" style={{ marginTop: 'var(--space-swap-top)' }}>
             <Swap key={swapKey}>
             <div className="swap-container">
               <div className="relative">
                 <SwapAmountInput
-                  label={isSellAction ? "Sell" : "Buy"}
+                  label="Buy"
                   token={fromToken}
                   type="from"
                 />
               </div>
               <div className="relative">
                 <SwapAmountInput
-                  label={isSellAction ? "Receive" : "Receive"}
+                  label="Receive"
                   token={toToken}
                   type="to"
                 />

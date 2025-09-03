@@ -2,14 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/Button"
-import { Icon } from "@/components/ui/Icon"
 import { usePositions } from "@/lib/positions-context"
 import type { PositionSide } from "@/lib/positions"
 import { getEthPriceWithFallback, type PriceWithTimestamp } from "@/lib/coingecko-api"
 
 export function OpenPositionForm() {
   const { openPosition } = usePositions()
-  const [type, setType] = useState<PositionSide>("BUY")
+  // Remove type selection - only BUY positions allowed
   const [openDatetime, setOpenDatetime] = useState(() => {
     const now = new Date()
     return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
@@ -66,14 +65,14 @@ export function OpenPositionForm() {
 
       // Use the context to open position (automatically updates UI)
       await openPosition({
-        side: type,
+        side: "BUY" as PositionSide, // Only BUY positions allowed
         priceUsd: finalPriceData.price,
         openedAt: utcDatetime,
       })
 
       const localDatetime = new Date(utcDatetime).toLocaleString()
       setSuccess(
-        `${type} position opened successfully at $${finalPriceData.price.toLocaleString()} on ${localDatetime}`
+        `BUY position opened successfully at $${finalPriceData.price.toLocaleString()} on ${localDatetime}`
       )
       setFetchedPriceData(null)
       setManualPrice("")
@@ -91,35 +90,6 @@ export function OpenPositionForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Position Type */}
-      <div>
-        <label className="block text-sm font-medium text-[var(--app-foreground)] mb-2">
-          Position Type
-        </label>
-        <div className="flex space-x-2">
-          <Button
-            type="button"
-            variant={type === "BUY" ? "primary" : "outline"}
-            size="sm"
-            onClick={() => setType("BUY")}
-            className="flex-1"
-          >
-            <Icon name="plus" size="sm" className="mr-1" />
-            BUY
-          </Button>
-          <Button
-            type="button"
-            variant={type === "SELL" ? "primary" : "outline"}
-            size="sm"
-            onClick={() => setType("SELL")}
-            className="flex-1"
-          >
-            <Icon name="arrow-right" size="sm" className="mr-1" />
-            SELL
-          </Button>
-        </div>
-      </div>
-
       {/* Date & Time */}
       <div>
         <label className="block text-sm font-medium text-[var(--app-foreground)] mb-2">
@@ -181,7 +151,7 @@ export function OpenPositionForm() {
         disabled={isLoading || (!fetchedPriceData && !manualPrice)}
         className="w-full"
       >
-        {isLoading ? "Opening Position..." : `Open ${type} Position`}
+        {isLoading ? "Opening Position..." : `Open Position`}
       </Button>
     </form>
   )

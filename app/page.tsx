@@ -103,7 +103,7 @@ export default function App() {
           <Tabs
             items={[
               { key: "trade", label: "Trade" },
-              { key: "dashboard", label: "Dashboard" },
+              { key: "dashboard", label: "Position Tracker" },
             ]}
             activeKey={activeTab}
             onChange={(key) => setActiveTab(key as "trade" | "dashboard")}

@@ -72,13 +72,9 @@ export function PositionsProvider({ children }: { children: React.ReactNode }) {
 
     const updatedPosition: Position = { ...position, status: "CLOSED", closedAt, closePriceUsd }
 
-    if (position.side === "BUY") {
-      updatedPosition.profitLoss = closePriceUsd - position.priceUsd
-      updatedPosition.profitLossPercent = ((closePriceUsd - position.priceUsd) / position.priceUsd) * 100
-    } else {
-      updatedPosition.profitLoss = position.priceUsd - closePriceUsd
-      updatedPosition.profitLossPercent = ((position.priceUsd - closePriceUsd) / position.priceUsd) * 100
-    }
+    // Only BUY positions supported - calculate profit/loss accordingly
+    updatedPosition.profitLoss = closePriceUsd - position.priceUsd
+    updatedPosition.profitLossPercent = ((closePriceUsd - position.priceUsd) / position.priceUsd) * 100
 
     const success = await updatePosition(id, updatedPosition)
     return success ? updatedPosition : null

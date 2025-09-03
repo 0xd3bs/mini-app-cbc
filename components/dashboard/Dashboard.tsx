@@ -10,7 +10,7 @@ export function Dashboard() {
       <div className="space-y-6">
         <div className="text-center text-xs text-[var(--app-foreground-muted)]">
           <p>
-            Professional Trading Dashboard - Manage your ETH positions and track your trading history.
+            Professional Trading Dashboard - Track your ETH BUY positions and monitor your trading performance.
           </p>
         </div>
 
