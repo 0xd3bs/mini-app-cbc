@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/Button"
+import { usePositions } from "@/lib/positions-context"
 import type { Position } from "@/lib/positions"
 import { getEthPriceWithFallback, type PriceWithTimestamp } from "@/lib/coingecko-api"
 
@@ -17,7 +18,8 @@ interface SimulationResult {
 }
 
 export function PositionSimulator() {
-  const [openPositions, setOpenPositions] = useState<Position[]>([])
+  const { positions } = usePositions()
+  const openPositions = positions.filter(p => p.status === "OPEN")
   const [selectedPositionId, setSelectedPositionId] = useState("")
   const [simulationDatetime, setSimulationDatetime] = useState(() => {
     const now = new Date()
@@ -28,23 +30,7 @@ export function PositionSimulator() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  useEffect(() => {
-    loadOpenPositions()
-  }, [])
-
-  const loadOpenPositions = async () => {
-    try {
-      const response = await fetch("/api/positions")
-      if (!response.ok) {
-        throw new Error("Failed to fetch positions")
-      }
-      const allPositions = await response.json()
-      const openPositions = allPositions.filter((p: Position) => p.status === "OPEN")
-      setOpenPositions(openPositions)
-    } catch {
-      setError("Failed to load open positions")
-    }
-  }
+  // No need to fetch positions - they come from context
 
   const selectedPosition = openPositions.find((p) => p.id === selectedPositionId)
 

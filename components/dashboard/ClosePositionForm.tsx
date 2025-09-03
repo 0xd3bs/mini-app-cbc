@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/Button"
-import type { Position } from "@/lib/positions"
+import { usePositions } from "@/lib/positions-context"
 import { getEthPriceWithFallback, type PriceWithTimestamp } from "@/lib/coingecko-api"
 
 export function ClosePositionForm() {
-  const [positions, setPositions] = useState<Position[]>([])
+  const { positions, closePosition } = usePositions()
   const [selectedPosition, setSelectedPosition] = useState<string>("")
   const [closeDatetime, setCloseDatetime] = useState(() => {
     const now = new Date()
@@ -18,24 +18,8 @@ export function ClosePositionForm() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  useEffect(() => {
-    fetchPositions()
-  }, [])
-
-  const fetchPositions = async () => {
-    try {
-      const response = await fetch("/api/positions")
-      if (!response.ok) {
-        throw new Error("Failed to fetch positions")
-      }
-      const data = await response.json()
-      const openPositions = data.filter((p: Position) => p.status === "OPEN")
-      setPositions(openPositions)
-    } catch {
-      setError("Failed to load positions")
-    }
-  }
-
+  // Filter open positions from context
+  
   const handleFetchPrice = async () => {
     setIsLoading(true)
     setError("")
@@ -80,19 +64,11 @@ export function ClosePositionForm() {
 
       const utcDatetime = new Date(closeDatetime).toISOString()
 
-      const response = await fetch("/api/positions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "close",
-          id: selectedPosition,
-          closePriceUsd: finalPrice,
-          closedAt: utcDatetime,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to close position")
+      // Use the context to close position (automatically updates UI)
+      const closedPosition = await closePosition(selectedPosition, utcDatetime, finalPrice)
+      
+      if (!closedPosition) {
+        throw new Error("Position not found or already closed")
       }
 
       const localDatetime = new Date(utcDatetime).toLocaleString()
@@ -100,7 +76,11 @@ export function ClosePositionForm() {
       setSelectedPosition("")
       setClosePrice("")
       setFetchedPriceData(null)
-      await fetchPositions() // Refresh positions
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setSuccess("")
+      }, 3000)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to close position")
     } finally {

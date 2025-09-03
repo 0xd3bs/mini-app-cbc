@@ -1,36 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/Card"
 import { Button } from "@/components/ui/Button"
-
+import { usePositions } from "@/lib/positions-context"
 import type { Position } from "@/lib/positions"
-import { formatDate } from "@/lib/utils"
+import { formatDuration } from "@/lib/utils"
 
 export function PositionsTable() {
-  const [positions, setPositions] = useState<Position[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchPositions()
-  }, [])
-
-  const fetchPositions = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch("/api/positions")
-      if (!response.ok) {
-        throw new Error("Failed to fetch positions")
-      }
-      const data = await response.json()
-      setPositions(data)
-    } catch {
-      setError("Failed to load positions")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { positions, isLoading, error, refreshPositions } = usePositions()
 
   const getPositionColor = (side: string) => {
     return side === "BUY" ? "text-green-500" : "text-red-500"
@@ -48,6 +25,86 @@ export function PositionsTable() {
     )
   }
 
+  const calculateDuration = (position: Position): string => {
+    try {
+      const openedAt = new Date(position.openedAt)
+      const closedAt = position.closedAt ? new Date(position.closedAt) : new Date()
+      
+      if (isNaN(openedAt.getTime()) || isNaN(closedAt.getTime())) {
+        return "-"
+      }
+      
+      const durationHours = (closedAt.getTime() - openedAt.getTime()) / (1000 * 60 * 60)
+      
+      if (durationHours < 0) {
+        return "-"
+      }
+      
+      return formatDuration(durationHours)
+    } catch {
+      return "-"
+    }
+  }
+
+  const formatPercentage = (percentage: number) => {
+    const formatted = percentage.toFixed(2)
+    return percentage > 0 ? `+${formatted}%` : `${formatted}%`
+  }
+
+  const getVariationColor = (variation: number) => {
+    if (variation > 0) return "text-green-600"
+    if (variation < 0) return "text-red-600"
+    return "text-[var(--app-foreground-muted)]"
+  }
+
+  const formatDateOnly = (dateString: string): string => {
+    try {
+      const date = new Date(dateString)
+      if (isNaN(date.getTime())) {
+        return "Invalid Date"
+      }
+      
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      })
+    } catch {
+      return "Invalid Date"
+    }
+  }
+
+  // 🎯 NEW: Combined Performance function
+  const getPerformanceSummary = (position: Position) => {
+    const duration = calculateDuration(position)
+    const hasVariation = position.profitLossPercent !== undefined
+    
+    if (duration === "-" && !hasVariation) {
+      return <span className="text-[var(--app-foreground-muted)] text-xs">-</span>
+    }
+
+    const variationColor = hasVariation ? getVariationColor(position.profitLossPercent!) : "text-[var(--app-foreground-muted)]"
+    const variationText = hasVariation ? formatPercentage(position.profitLossPercent!) : "-"
+
+    return (
+      <div className="flex flex-col gap-0.5">
+        <div className="text-xs text-[var(--app-foreground-muted)] leading-tight">
+          {duration}
+        </div>
+        <div className={`text-xs font-medium leading-tight ${variationColor}`}>
+          {variationText}
+        </div>
+      </div>
+    )
+  }
+
+  // 🎯 NEW: Tooltip content for dates
+  const getDateTooltip = (position: Position) => {
+    const opened = formatDateOnly(position.openedAt)
+    const closed = position.closedAt ? formatDateOnly(position.closedAt) : "Still open"
+    return `Opened: ${opened}\nClosed: ${closed}`
+  }
+
   if (isLoading) {
     return (
       <Card title="Trading Positions">
@@ -63,7 +120,7 @@ export function PositionsTable() {
       <Card title="Trading Positions">
         <div className="text-center py-8">
           <p className="text-red-500 mb-4">Error: {error}</p>
-          <Button onClick={fetchPositions} variant="outline" size="sm">
+          <Button onClick={refreshPositions} variant="outline" size="sm">
             Retry
           </Button>
         </div>
@@ -73,10 +130,6 @@ export function PositionsTable() {
 
   return (
     <Card title="Trading Positions">
-      <div className="flex justify-end mb-4">
-
-      </div>
-      
       {positions.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-[var(--app-foreground-muted)]">
@@ -85,53 +138,40 @@ export function PositionsTable() {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full">
+          {/* 🎯 OPTIMIZED: Reduced min-width for mobile */}
+          <table className="w-full min-w-[350px]">
             <thead>
               <tr className="border-b border-[var(--app-card-border)]">
-                <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
+                <th className="text-left py-2 px-2 text-xs font-medium text-[var(--app-foreground-muted)]">
                   Type
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
+                <th className="text-left py-2 px-2 text-xs font-medium text-[var(--app-foreground-muted)]">
                   Status
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
-                  Opened
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
-                  Closed
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
-                  P&L
+                {/* 🎯 NEW: Combined Performance column */}
+                <th className="text-left py-2 px-2 text-xs font-medium text-[var(--app-foreground-muted)]">
+                  Performance
                 </th>
               </tr>
             </thead>
             <tbody>
               {positions.map((position) => (
                 <tr key={position.id} className="border-b border-[var(--app-card-border)] hover:bg-[var(--app-gray)]">
-                  <td className="py-3 px-4">
-                    <span className={`font-medium ${getPositionColor(position.side)}`}>
+                  {/* 🎯 Type with tooltip for dates */}
+                  <td 
+                    className="py-2 px-2 cursor-help" 
+                    title={getDateTooltip(position)}
+                  >
+                    <span className={`font-medium text-xs ${getPositionColor(position.side)}`}>
                       {position.side}
                     </span>
                   </td>
-                  <td className="py-3 px-4">
+                  <td className="py-2 px-2">
                     {getStatusBadge(position.status)}
                   </td>
-                  <td className="py-3 px-4 text-sm text-[var(--app-foreground-muted)]">
-                    {formatDate(position.openedAt)}
-                  </td>
-                  <td className="py-3 px-4 text-sm text-[var(--app-foreground-muted)]">
-                    {position.closedAt ? formatDate(position.closedAt) : "-"}
-                  </td>
-                  <td className="py-3 px-4 text-sm">
-                    {position.profitLoss !== undefined ? (
-                      <span className={`font-medium ${
-                        position.profitLoss >= 0 ? "text-green-600" : "text-red-600"
-                      }`}>
-                        ${position.profitLoss.toFixed(2)} ({position.profitLossPercent?.toFixed(2)}%)
-                      </span>
-                    ) : (
-                      "-"
-                    )}
+                  {/* 🎯 NEW: Combined Performance column */}
+                  <td className="py-2 px-2">
+                    {getPerformanceSummary(position)}
                   </td>
                 </tr>
               ))}

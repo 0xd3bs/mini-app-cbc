@@ -3,10 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/Button"
 import { Icon } from "@/components/ui/Icon"
+import { usePositions } from "@/lib/positions-context"
 import type { PositionSide } from "@/lib/positions"
 import { getEthPriceWithFallback, type PriceWithTimestamp } from "@/lib/coingecko-api"
 
 export function OpenPositionForm() {
+  const { openPosition } = usePositions()
   const [type, setType] = useState<PositionSide>("BUY")
   const [openDatetime, setOpenDatetime] = useState(() => {
     const now = new Date()
@@ -62,20 +64,12 @@ export function OpenPositionForm() {
 
       const utcDatetime = new Date(openDatetime).toISOString()
 
-      const response = await fetch("/api/positions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "open",
-          side: type,
-          priceUsd: finalPriceData.price,
-          openedAt: utcDatetime,
-        }),
+      // Use the context to open position (automatically updates UI)
+      await openPosition({
+        side: type,
+        priceUsd: finalPriceData.price,
+        openedAt: utcDatetime,
       })
-
-      if (!response.ok) {
-        throw new Error("Failed to create position")
-      }
 
       const localDatetime = new Date(utcDatetime).toLocaleString()
       setSuccess(
@@ -84,10 +78,10 @@ export function OpenPositionForm() {
       setFetchedPriceData(null)
       setManualPrice("")
       
-      // Trigger a page refresh to show the new position
+      // Clear success message after 3 seconds
       setTimeout(() => {
-        window.location.reload()
-      }, 1500)
+        setSuccess("")
+      }, 3000)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create position")
     } finally {
