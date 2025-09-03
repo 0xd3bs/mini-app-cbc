@@ -191,9 +191,6 @@ export function PositionSimulator() {
         {/* Simulation Price */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-[var(--app-foreground)]">
-              Simulation Price (USD)
-            </label>
             <Button
               type="button"
               variant="outline"
@@ -204,16 +201,6 @@ export function PositionSimulator() {
               {isLoading ? "Simulating..." : "Simulate"}
             </Button>
           </div>
-
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            value={manualPrice}
-            onChange={(e) => setManualPrice(e.target.value)}
-            placeholder="Enter price manually or leave empty to fetch from API"
-            className="w-full px-3 py-2 border border-[var(--app-card-border)] rounded-lg bg-[var(--app-card-bg)] text-[var(--app-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
-          />
         </div>
 
         {error && (

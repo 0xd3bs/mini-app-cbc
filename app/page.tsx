@@ -96,15 +96,6 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[var(--app-accent)] p-4"
-              icon={<Icon name="arrow-right" size="sm" />}
-              onClick={() => router.push("/dashboard")}
-            >
-              Dashboard
-            </Button>
             {saveFrameButton}
           </div>
         </header>

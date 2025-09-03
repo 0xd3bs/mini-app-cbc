@@ -74,10 +74,7 @@ export function PositionsTable() {
   return (
     <Card title="Trading Positions">
       <div className="flex justify-end mb-4">
-        <Button onClick={fetchPositions} variant="outline" size="sm">
-          <Icon name="arrow-right" size="sm" className="mr-1" />
-          Refresh
-        </Button>
+
       </div>
       
       {positions.length === 0 ? (
@@ -96,9 +93,6 @@ export function PositionsTable() {
                 </th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
                   Status
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
-                  Price
                 </th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-[var(--app-foreground-muted)]">
                   Opened
@@ -121,9 +115,6 @@ export function PositionsTable() {
                   </td>
                   <td className="py-3 px-4">
                     {getStatusBadge(position.status)}
-                  </td>
-                  <td className="py-3 px-4 text-sm">
-                    ${position.priceUsd.toFixed(2)}
                   </td>
                   <td className="py-3 px-4 text-sm text-[var(--app-foreground-muted)]">
                     {formatDate(position.openedAt)}

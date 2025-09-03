@@ -157,9 +157,6 @@ export function ClosePositionForm() {
       {/* Close Price */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-sm font-medium text-[var(--app-foreground)]">
-            Close Price (USD)
-          </label>
           <Button
             type="button"
             variant="outline"
@@ -182,16 +179,6 @@ export function ClosePositionForm() {
             </p>
           </div>
         )}
-
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          value={closePrice}
-          onChange={(e) => setClosePrice(e.target.value)}
-          placeholder="Enter close price manually if API fails"
-          className="w-full px-3 py-2 border border-[var(--app-card-border)] rounded-lg bg-[var(--app-card-bg)] text-[var(--app-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
-        />
       </div>
 
       {error && (
